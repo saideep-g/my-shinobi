@@ -15,15 +15,22 @@ export interface DailyProgress {
 
 export const missionService = {
     /**
-     * Calculates progress toward the daily goal (e.g., 10 questions).
-     * This is computed on-the-fly from the local sessions buffer.
+     * Calculates progress toward the daily goal (default: 10 questions).
+     * Implements a 4 AM IST reset: 00:00 - 04:00 counts as the previous day.
      */
     calculateDailyProgress(sessions: AssessmentSession[], goal: number = 10): DailyProgress {
-        const today = new Date().toISOString().split('T')[0];
+        // Offset: 4 hours in milliseconds
+        const OFFSET_MS = 4 * 60 * 60 * 1000;
 
-        // Filter sessions from today and sum up the logs (questions answered)
+        // Helper to get the "Shinobi Date" by shifting the clock back 4 hours
+        const getShinobiDate = (timestamp: number) =>
+            new Date(timestamp - OFFSET_MS).toISOString().split('T')[0];
+
+        const todayShinobiDate = getShinobiDate(Date.now());
+
+        // Sum logs from sessions that fall into the current "Shinobi Day"
         const todayCount = sessions
-            .filter(s => new Date(s.startTime).toISOString().split('T')[0] === today)
+            .filter(s => getShinobiDate(s.startTime) === todayShinobiDate)
             .reduce((acc, session) => acc + (session.logs?.length || 0), 0);
 
         return {
