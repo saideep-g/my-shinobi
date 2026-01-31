@@ -8,6 +8,8 @@ import { assessmentManager } from '@/features/assessment/services/assessmentMana
 import { logService } from '@/features/assessment/services/logService';
 import { useProgression } from './ProgressionContext';
 import { PROGRESSION_CONSTANTS } from './progression';
+import { SensoryService } from '@core/media/SensoryService';
+import { useMission } from '@/features/progression/context/MissionContext';
 
 /**
  * SESSION CONTEXT
@@ -32,6 +34,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const { user } = useAuth();
     const { mastery, recordAttempt, getAtomMastery } = useIntelligence();
     const { addXP, updateStreak } = useProgression();
+    const { refreshProgress } = useMission();
 
     const [activeBundle, setActiveBundle] = useState<SubjectBundle | null>(null);
     const [currentQuestion, setCurrentQuestion] = useState<QuestionBase | null>(null);
@@ -68,6 +71,13 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const submitResponse = useCallback(async (isCorrect: boolean, duration: number) => {
         if (!currentQuestion || !activeBundle || !activeSessionId) return;
 
+        // 0. Trigger Sensory Feedback (Mobile Vibrate + Sound)
+        if (isCorrect) {
+            SensoryService.triggerSuccess();
+        } else {
+            SensoryService.triggerError();
+        }
+
         console.log(`[Session] Submitting response for ${currentQuestion.id}: ${isCorrect ? 'CORRECT' : 'WRONG'}`);
 
         // 1. Capture mastery before calculation
@@ -87,6 +97,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const xpAmount = isCorrect ? PROGRESSION_CONSTANTS.XP_PER_CORRECT : PROGRESSION_CONSTANTS.XP_PER_ATTEMPT;
         await addXP(xpAmount);
         await updateStreak();
+        await refreshProgress(); // Update Daily Mission Progress
 
         // 5. Add current question to recent history (queue of 10)
         const updatedRecent = [...recentIds, currentQuestion.id].slice(-10);

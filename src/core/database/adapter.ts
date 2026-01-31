@@ -48,5 +48,10 @@ export const dbAdapter = {
         const all = await db.getAll('sessions');
         // We only want sessions that are COMPLETED but not yet SYNCED to Firestore
         return all.filter(s => s.status === 'COMPLETED');
+    },
+
+    async getSessionsForUser(userId: string) {
+        const db = await initDB();
+        return db.getAllFromIndex('sessions', 'by-user', userId);
     }
 };

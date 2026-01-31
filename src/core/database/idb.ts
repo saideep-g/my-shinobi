@@ -41,6 +41,7 @@ export const initDB = async (): Promise<IDBPDatabase<ShinobiDB>> => {
             if (!db.objectStoreNames.contains('sessions')) {
                 const sStore = db.createObjectStore('sessions', { keyPath: 'id' });
                 sStore.createIndex('by-status', 'status');
+                sStore.createIndex('by-user', 'userId');
             }
 
             // 4. Student Stats & Progression
