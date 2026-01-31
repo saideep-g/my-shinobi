@@ -9,7 +9,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest",
-    "test:e2e": "playwright test"
+    "test:unit": "vitest",
+    "test:e2e": "playwright test",
+    "ship-it": "node scripts/ship-it.js"
   },
   "dependencies": {
     "clsx": "^2.0.0",
