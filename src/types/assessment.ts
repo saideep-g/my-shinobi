@@ -20,6 +20,8 @@ export interface QuestionLog {
     atomId: string;
     /** Captured student misconception if applicable */
     misconceptionTag?: string;
+    /** Optional metadata for specific subjects (e.g., factors for math) */
+    metadata?: Record<string, any>;
 }
 
 export interface AssessmentSession {

@@ -3,20 +3,27 @@ import { Atom } from '@/types/curriculum';
 
 /**
  * GENERATE TABLE ATOMS
- * Helper to create atoms for tables 2 through 12 with sequential prerequisites.
+ * Helper to create granular atoms for every multiplication fact (1x1 to 12x12).
+ * Naming: table-{tableNum}-{multiplier} (e.g., table-7-8)
  */
 const generateTableAtoms = (): Atom[] => {
     const atoms: Atom[] = [];
-    for (let i = 2; i <= 12; i++) {
-        atoms.push({
-            id: `table-${i}`,
-            title: `Table of ${i}`,
-            description: `Master the multiplication facts for ${i}.`,
-            type: 'procedural',
-            prerequisites: i === 2 ? [] : [`table-${i - 1}`],
-            status: 'LIVE',
-            recommendedTemplates: ['math-table-v1']
-        });
+    // We cover tables 2 through 12
+    for (let t = 2; t <= 12; t++) {
+        // To unlock table T, all facts of table T-1 should be mastered
+        const prevTableAtoms = t === 2 ? [] : Array.from({ length: 12 }, (_, i) => `table-${t - 1}-${i + 1}`);
+
+        for (let m = 1; m <= 12; m++) {
+            atoms.push({
+                id: `table-${t}-${m}`,
+                title: `${t} × ${m}`,
+                description: `Master the fluency of ${t} multiplied by ${m}.`,
+                type: 'procedural',
+                prerequisites: prevTableAtoms,
+                status: 'LIVE',
+                recommendedTemplates: ['math-table-v1']
+            });
+        }
     }
     return atoms;
 };

@@ -15,8 +15,8 @@ export const FluencyHeatmap: React.FC = () => {
     const [selectedCell, setSelectedCell] = useState<{ r: number, c: number } | null>(null);
 
     const getMasteryColor = (r: number, c: number) => {
-        const factHash = `hash-${r}x${c}-fact`;
-        const mVal = mastery[factHash];
+        const atomId = `table-${r}-${c}`;
+        const mVal = mastery[atomId];
 
         if (mVal === undefined) return 'bg-app-bg border-app-border opacity-20'; // Not tested
         if (mVal >= 0.85) return 'bg-emerald-500 shadow-sm shadow-emerald-500/20'; // Mastered
@@ -96,8 +96,8 @@ export const FluencyHeatmap: React.FC = () => {
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Mastery Status:</span>
                                 <span className="text-[10px] font-black text-app-primary uppercase">
-                                    {mastery[`hash-${selectedCell.r}x${selectedCell.c}-fact`]
-                                        ? `${Math.round(mastery[`hash-${selectedCell.r}x${selectedCell.c}-fact`] * 100)}% Precision`
+                                    {mastery[`table-${selectedCell.r}-${selectedCell.c}`]
+                                        ? `${Math.round(mastery[`table-${selectedCell.r}-${selectedCell.c}`] * 100)}% Precision`
                                         : "Not Yet Analyzed"
                                     }
                                 </span>

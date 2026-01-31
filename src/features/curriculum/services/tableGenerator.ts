@@ -6,11 +6,10 @@ import { QuestionBase } from '@/types/questions';
  */
 
 export const generateMathTableQuestion = (atomId: string, masteryVal: number = 0): QuestionBase => {
-    // 1. Identify Target Table from Atom ID (e.g., 'table-7')
-    const tableNum = parseInt(atomId.split('-').pop() || '1');
-
-    // 2. Select a random multiplier (1 - 12)
-    const multiplier = Math.floor(Math.random() * 12) + 1;
+    // 1. Identify Target Table and Multiplier from Atom ID (e.g., 'table-7' or 'table-7-8')
+    const parts = atomId.split('-');
+    const tableNum = parseInt(parts[1] || '1');
+    const multiplier = parts[2] ? parseInt(parts[2]) : Math.floor(Math.random() * 12) + 1;
     const answer = tableNum * multiplier;
 
     // 3. Determine Interaction Type (Fact vs Missing Multiplier)

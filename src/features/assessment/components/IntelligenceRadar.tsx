@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useIntelligence } from '@core/engine/IntelligenceContext';
 import { SubjectBundle } from '@/types/bundles';
 import { MasteryGauge } from './MasteryGauge';
+import { FluencyHeatmap } from '@/features/progression/components/FluencyHeatmap';
 import { ShieldCheck, Activity, Zap } from 'lucide-react';
 
 /**
@@ -18,6 +19,10 @@ interface IntelligenceRadarProps {
 
 export const IntelligenceRadar = React.memo(({ bundle }: IntelligenceRadarProps) => {
     const { mastery, getAtomMastery } = useIntelligence();
+
+    if (bundle.id === 'multiplication-tables') {
+        return <FluencyHeatmap />;
+    }
 
     // 1. Memoize high-level stats calculation
     const subjectStats = useMemo(() => {
