@@ -21,9 +21,9 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
     allowedRoles,
     redirectTo = '/'
 }) => {
-    const { profile, loading } = useAuth();
+    const { profile, isInitializing } = useAuth();
 
-    if (loading) return null; // Let the ProtectedRoute handle the loading spinner
+    if (isInitializing) return null; // Let the ProtectedRoute handle the loading spinner
 
     // If profile doesn't exist or role isn't allowed, redirect
     if (!profile || !allowedRoles.includes(profile.role)) {

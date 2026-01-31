@@ -61,6 +61,7 @@ import { SessionProvider } from '@core/engine/SessionContext';
 import { ProgressionProvider } from '@core/engine/ProgressionContext';
 import { MissionProvider } from '@features/progression/context/MissionContext';
 import { AppController } from './AppController';
+import { LoadingGuard } from '@core/auth/LoadingGuard';
 import { ContentWorkbench } from '@features/admin/components/ContentWorkbench';
 
 export default function App() {
@@ -71,41 +72,43 @@ export default function App() {
                     <ProgressionProvider>
                         <MissionProvider>
                             <SessionProvider>
-                                <Router>
-                                    <Routes>
-                                        {/* Public Routes */}
-                                        <Route path="/login" element={<LoginPage />} />
+                                <LoadingGuard>
+                                    <Router>
+                                        <Routes>
+                                            {/* Public Routes */}
+                                            <Route path="/login" element={<LoginPage />} />
 
-                                        {/* Student Protected Routes (Wrapped in Shell Selector) */}
-                                        <Route
-                                            path="/dashboard"
-                                            element={
-                                                <ProtectedRoute>
-                                                    <RoleGuard allowedRoles={['STUDENT', 'ADMIN']}>
-                                                        <StudentShellSelector>
-                                                            <AppController />
-                                                        </StudentShellSelector>
-                                                    </RoleGuard>
-                                                </ProtectedRoute>
-                                            }
-                                        />
+                                            {/* Student Protected Routes (Wrapped in Shell Selector) */}
+                                            <Route
+                                                path="/dashboard"
+                                                element={
+                                                    <ProtectedRoute>
+                                                        <RoleGuard allowedRoles={['STUDENT', 'ADMIN']}>
+                                                            <StudentShellSelector>
+                                                                <AppController />
+                                                            </StudentShellSelector>
+                                                        </RoleGuard>
+                                                    </ProtectedRoute>
+                                                }
+                                            />
 
-                                        {/* Admin Only Routes */}
-                                        <Route
-                                            path="/admin/*"
-                                            element={
-                                                <ProtectedRoute>
-                                                    <RoleGuard allowedRoles={['ADMIN']} redirectTo="/dashboard">
-                                                        <ContentWorkbench />
-                                                    </RoleGuard>
-                                                </ProtectedRoute>
-                                            }
-                                        />
+                                            {/* Admin Only Routes */}
+                                            <Route
+                                                path="/admin/*"
+                                                element={
+                                                    <ProtectedRoute>
+                                                        <RoleGuard allowedRoles={['ADMIN']} redirectTo="/dashboard">
+                                                            <ContentWorkbench />
+                                                        </RoleGuard>
+                                                    </ProtectedRoute>
+                                                }
+                                            />
 
-                                        {/* Default Redirect */}
-                                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                                    </Routes>
-                                </Router>
+                                            {/* Default Redirect */}
+                                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                                        </Routes>
+                                    </Router>
+                                </LoadingGuard>
                             </SessionProvider>
                         </MissionProvider>
                     </ProgressionProvider>

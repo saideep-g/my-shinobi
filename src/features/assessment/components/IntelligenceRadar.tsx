@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useIntelligence } from '@core/engine/IntelligenceContext';
 import { SubjectBundle } from '@/types/bundles';
 import { MasteryGauge } from './MasteryGauge';
@@ -8,23 +8,28 @@ import { ShieldCheck, Activity, Zap } from 'lucide-react';
  * INTELLIGENCE RADAR HUB
  * The primary visualization for a subject's knowledge graph.
  * Maps individual atom masteries into a global progress overview.
+ * 
+ * Optimized with React.memo to prevent re-renders unless mastery values change.
  */
 
 interface IntelligenceRadarProps {
     bundle: SubjectBundle;
 }
 
-export const IntelligenceRadar: React.FC<IntelligenceRadarProps> = ({ bundle }) => {
-    const { getAtomMastery } = useIntelligence();
+export const IntelligenceRadar = React.memo(({ bundle }: IntelligenceRadarProps) => {
+    const { mastery, getAtomMastery } = useIntelligence();
 
-    // Calculate high level stats
-    const allAtoms = bundle.curriculum.chapters.flatMap(c => c.atoms);
-    const masteredCount = allAtoms.filter(a => getAtomMastery(a.id) >= 0.85).length;
+    // 1. Memoize high-level stats calculation
+    const subjectStats = useMemo(() => {
+        const allAtoms = bundle.curriculum.chapters.flatMap(c => c.atoms);
+        const masteredCount = allAtoms.filter(a => (mastery[a.id] || 0) >= 0.85).length;
+        const totalAtoms = bundle.stats?.totalAtoms || allAtoms.length || 1;
 
-    const totalAtoms = bundle.stats?.totalAtoms || allAtoms.length || 1;
-    const averageSignal = Math.round(
-        (allAtoms.reduce((acc, a) => acc + getAtomMastery(a.id), 0) / totalAtoms) * 100
-    );
+        const sumMastery = allAtoms.reduce((acc, a) => acc + (mastery[a.id] || 0), 0);
+        const averageSignal = Math.round((sumMastery / totalAtoms) * 100);
+
+        return { masteredCount, averageSignal, allAtoms };
+    }, [bundle, mastery]);
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
@@ -33,12 +38,12 @@ export const IntelligenceRadar: React.FC<IntelligenceRadarProps> = ({ bundle }) 
                 <StatCard
                     icon={<ShieldCheck className="text-app-accent" />}
                     label="Mastered Atoms"
-                    value={masteredCount}
+                    value={subjectStats.masteredCount}
                 />
                 <StatCard
                     icon={<Activity className="text-app-primary" />}
                     label="Average Signal"
-                    value={`${averageSignal}%`}
+                    value={`${subjectStats.averageSignal}%`}
                 />
             </div>
 
@@ -74,7 +79,7 @@ export const IntelligenceRadar: React.FC<IntelligenceRadarProps> = ({ bundle }) 
             ))}
         </div>
     );
-};
+});
 
 interface StatCardProps {
     icon: React.ReactNode;

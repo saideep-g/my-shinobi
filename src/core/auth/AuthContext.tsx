@@ -17,7 +17,7 @@ interface AuthContextType {
     // The custom My-Shinobi profile (role, grade, etc.)
     profile: UserProfile | null;
     // Loading state to prevent premature rendering of protected routes
-    loading: boolean;
+    isInitializing: boolean;
     // Utility function to log out
     logout: () => Promise<void>;
     // Utility function to sign in with Google
@@ -31,7 +31,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<FirebaseUser | null>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [isInitializing, setIsInitializing] = useState(true);
 
     useEffect(() => {
         /**
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
          * when the app initializes with a persisted session.
          */
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            setLoading(true);
+            setIsInitializing(true);
 
             if (firebaseUser) {
                 // User is logged in, now fetch their custom profile data from Firestore
@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setProfile(null);
             }
 
-            setLoading(false);
+            setIsInitializing(false);
         });
 
         // Cleanup subscription on unmount
@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         <AuthContext.Provider value={{
             user,
             profile,
-            loading,
+            isInitializing,
             logout,
             signInWithGoogle,
             isAdmin: profile?.role === 'ADMIN'

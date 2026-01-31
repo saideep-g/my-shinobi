@@ -14,10 +14,10 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const { user, loading } = useAuth();
+    const { user, isInitializing } = useAuth();
     const location = useLocation();
 
-    if (loading) {
+    if (isInitializing) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-app-bg">
                 <div className="w-12 h-12 border-4 border-app-primary border-t-transparent rounded-full animate-spin" />
