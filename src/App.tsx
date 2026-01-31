@@ -1,6 +1,7 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@core/theme/ThemeContext';
-import { AuthProvider } from '@core/auth/AuthContext';
+import { AuthProvider, useAuth } from '@core/auth/AuthContext';
 import { ProtectedRoute } from '@core/auth/ProtectedRoute';
 import { RoleGuard } from '@core/auth/RoleGuard';
 import { StudentShellSelector } from '@layouts/StudentShellSelector';
@@ -38,6 +39,21 @@ const StudentDashboard = () => (
 
 const LoginPage = () => {
     const { theme, toggleTheme } = useTheme();
+    const { signInWithGoogle } = useAuth();
+    const [isLoggingIn, setIsLoggingIn] = React.useState(false);
+
+    const handleLogin = async () => {
+        setIsLoggingIn(true);
+        try {
+            await signInWithGoogle();
+        } catch (error) {
+            console.error("Login failed:", error);
+            alert("Firebase Sign-in failed. Please check your .env configuration.");
+        } finally {
+            setIsLoggingIn(false);
+        }
+    };
+
     return (
         <div className="p-12 bg-app-bg min-h-screen flex flex-col items-center justify-center transition-colors duration-300">
             <div className="absolute top-8 right-8">
@@ -56,8 +72,12 @@ const LoginPage = () => {
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Gate of Entry</h2>
                 <p className="text-text-muted mb-8 text-sm">Please sign in to continue.</p>
-                <button className="w-full py-4 bg-app-primary text-white rounded-xl font-bold shadow-lg">
-                    Unlock with Firebase
+                <button
+                    onClick={handleLogin}
+                    disabled={isLoggingIn}
+                    className={`w-full py-4 bg-app-primary text-white rounded-xl font-bold shadow-lg transition-all active:scale-95 ${isLoggingIn ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-app-primary/20 hover:-translate-y-0.5'}`}
+                >
+                    {isLoggingIn ? 'Connecting...' : 'Unlock with Firebase'}
                 </button>
             </div>
         </div>

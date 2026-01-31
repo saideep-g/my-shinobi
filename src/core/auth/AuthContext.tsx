@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User as FirebaseUser, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getDoc } from 'firebase/firestore';
+import { User as FirebaseUser, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getDoc, setDoc } from 'firebase/firestore';
 import { auth } from '@core/database/firebase';
 import { getStudentDoc } from '@services/db/firestore';
 import { UserProfile } from '@/types/auth';
@@ -20,6 +20,8 @@ interface AuthContextType {
     loading: boolean;
     // Utility function to log out
     logout: () => Promise<void>;
+    // Utility function to sign in with Google
+    signInWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,8 +48,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     if (profileDoc.exists()) {
                         setProfile(profileDoc.data() as UserProfile);
                     } else {
-                        console.warn(`[AuthService] No Firestore profile found for UID: ${firebaseUser.uid}`);
-                        setProfile(null);
+                        // NEW: Auto-initialize profile for first-time users
+                        const newProfile: UserProfile = {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email || '',
+                            displayName: firebaseUser.displayName || 'New Shinobi',
+                            role: 'STUDENT',
+                            grade: 7,
+                            createdAt: Date.now(),
+                            updatedAt: Date.now(),
+                            preferredLayout: 'mobile-quest',
+                            connections: []
+                        };
+                        await setDoc(getStudentDoc(firebaseUser.uid), newProfile);
+                        setProfile(newProfile);
+                        console.log(`[AuthService] New profile initialized for: ${firebaseUser.uid}`);
                     }
                 } catch (error) {
                     console.error("[AuthService] Failed to fetch user profile:", error);
@@ -74,8 +89,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+    const signInWithGoogle = async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (error) {
+            console.error("[AuthService] Google Sign-In failed:", error);
+            throw error;
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, profile, loading, logout }}>
+        <AuthContext.Provider value={{ user, profile, loading, logout, signInWithGoogle }}>
             {children}
         </AuthContext.Provider>
     );

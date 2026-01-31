@@ -29,6 +29,15 @@ export const getSubjectsCol = (): CollectionReference =>
 export const getSubjectDoc = (subjectId: string): DocumentReference =>
     doc(db, 'subjects', subjectId);
 
+// --- BUNDLE MASTER PATHS ---
+/** Returns a reference to the version control document for a specific bundle */
+export const getBundleMasterDoc = (bundleId: string): DocumentReference =>
+    doc(db, 'bundle_master', bundleId);
+
+/** Returns a reference to the heavy content bundle document */
+export const getBundleDoc = (bundleId: string): DocumentReference =>
+    doc(db, 'bundles', bundleId);
+
 // --- QUESTION PATHS ---
 /** Returns the global question library collection */
 export const getQuestionsCol = (): CollectionReference =>
