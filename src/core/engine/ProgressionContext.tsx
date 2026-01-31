@@ -2,7 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { dbAdapter } from '@core/database/adapter';
 import { useAuth } from '@core/auth/AuthContext';
 import { calculateLevel } from './progression';
-import { StudentStats } from '@/types/progression';
+import { StudentStats, Achievement } from '@/types/progression';
+import { useIntelligence } from './IntelligenceContext';
+import { checkNewAchievements } from './achievements/achievementEngine';
 
 /**
  * PROGRESSION CONTEXT
@@ -14,6 +16,7 @@ interface ProgressionContextType {
     stats: StudentStats;
     addXP: (amount: number) => Promise<void>;
     updateStreak: () => Promise<void>;
+    checkForAchievements: () => Promise<Achievement[]>;
     isLoaded: boolean;
 }
 
@@ -30,6 +33,7 @@ const ProgressionContext = createContext<ProgressionContextType | undefined>(und
 
 export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user } = useAuth();
+    const { mastery } = useIntelligence();
     const [stats, setStats] = useState<StudentStats>(DEFAULT_STATS);
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -115,8 +119,30 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         await dbAdapter.put('stats', { ...updatedStats, id: user.uid });
     };
 
+    /**
+     * Scans for newly unlocked achievements based on current mastery and stats.
+     */
+    const checkForAchievements = async () => {
+        if (!user) return [];
+
+        const alreadyEarnedIds = (stats.achievements || []).map(a => a.id);
+        const newlyEarned = checkNewAchievements(mastery, stats, alreadyEarnedIds);
+
+        if (newlyEarned.length > 0) {
+            const updatedAchievements = [...(stats.achievements || []), ...newlyEarned];
+            const updatedStats = { ...stats, achievements: updatedAchievements };
+
+            setStats(updatedStats);
+            await dbAdapter.put('stats', { ...updatedStats, id: user.uid });
+
+            return newlyEarned;
+        }
+
+        return [];
+    };
+
     return (
-        <ProgressionContext.Provider value={{ stats, addXP, updateStreak, isLoaded }}>
+        <ProgressionContext.Provider value={{ stats, addXP, updateStreak, checkForAchievements, isLoaded }}>
             {children}
         </ProgressionContext.Provider>
     );
