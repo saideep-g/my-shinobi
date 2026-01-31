@@ -18,6 +18,7 @@ interface ProgressionContextType {
     updateStreak: () => Promise<void>;
     checkForAchievements: () => Promise<Achievement[]>;
     updateStats: (updates: Partial<StudentStats>) => Promise<void>;
+    updateProfileDetails: (updates: Partial<StudentStats>) => Promise<void>;
     isLoaded: boolean;
 }
 
@@ -154,11 +155,19 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     };
 
     return (
-        <ProgressionContext.Provider value={{ stats, addXP, updateStreak, checkForAchievements, updateStats, isLoaded }}>
+        <ProgressionContext.Provider value={{
+            stats,
+            addXP,
+            updateStreak,
+            checkForAchievements,
+            updateStats,
+            updateProfileDetails: updateStats,
+            isLoaded
+        }}>
             {children}
         </ProgressionContext.Provider>
     );
-};
+}
 
 export const useProgression = () => {
     const context = useContext(ProgressionContext);

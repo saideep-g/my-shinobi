@@ -6,6 +6,7 @@ import { StudyEraLibrary } from '@features/progression/components/StudyEraLibrar
 import { HeroProfile } from '@features/progression/components/HeroProfile';
 import { SubjectMissionList } from '@features/progression/components/SubjectMissionList';
 import { SubjectMasteryList } from '@features/progression/components/SubjectMasteryList';
+import { HistoryVault } from '@features/assessment/components/HistoryVault';
 import { useSession } from '@core/engine/SessionContext';
 import { Grade7EnglishBundle } from '@features/curriculum/data/grade-7/english-bundle';
 import { Grade7MathBundle } from '@features/curriculum/data/grade-7/math-bundle';
@@ -18,7 +19,7 @@ import { ChevronLeft } from 'lucide-react';
  */
 
 export const AppController: React.FC = () => {
-    const [section, setSection] = useState<'quest' | 'library' | 'profile'>('quest');
+    const [section, setSection] = useState<'quest' | 'library' | 'profile' | 'history'>('quest');
     const [selectedBundle, setSelectedBundle] = useState<SubjectBundle | null>(null);
     const { startSession } = useSession();
 
@@ -35,18 +36,18 @@ export const AppController: React.FC = () => {
 
     return (
         <UniversalNav
-            activeSection={section}
+            activeSection={section === 'history' ? 'profile' : section}
             setSection={(s) => {
                 setSection(s);
                 // Auto-reset selection when switching main sections
                 if (s === 'profile') setSelectedBundle(null);
             }}
         >
-            <div className="p-6 pb-32">
+            <div className="p-0">
 
                 {/* 1. QUEST SECTION */}
                 {section === 'quest' && (
-                    <div className="max-w-md mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="p-6 max-w-md mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                         {!selectedBundle ? (
                             <>
                                 <DailyMissionCard />
@@ -81,7 +82,7 @@ export const AppController: React.FC = () => {
 
                 {/* 2. LIBRARY SECTION */}
                 {section === 'library' && (
-                    <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+                    <div className="p-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
                         {!selectedBundle ? (
                             <SubjectMasteryList
                                 bundles={activeBundles}
@@ -112,7 +113,30 @@ export const AppController: React.FC = () => {
                 )}
 
                 {/* 3. PROFILE SECTION */}
-                {section === 'profile' && <HeroProfile />}
+                {section === 'profile' && (
+                    <div className="animate-in fade-in zoom-in-95 duration-500">
+                        <HeroProfile onViewHistory={() => setSection('history')} />
+                    </div>
+                )}
+
+                {/* 4. HISTORY VAULT */}
+                {section === 'history' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-10 duration-700">
+                        <div className="max-w-md mx-auto p-6 flex items-center gap-4">
+                            <button
+                                onClick={() => setSection('profile')}
+                                className="p-3 bg-app-surface border border-app-border rounded-2xl hover:bg-app-bg transition-colors"
+                            >
+                                <ChevronLeft size={20} />
+                            </button>
+                            <div>
+                                <h3 className="text-xl font-black text-text-main">Archives</h3>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Vault Navigation</p>
+                            </div>
+                        </div>
+                        <HistoryVault />
+                    </div>
+                )}
             </div>
         </UniversalNav>
     );

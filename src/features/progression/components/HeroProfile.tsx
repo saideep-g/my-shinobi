@@ -4,7 +4,7 @@ import { useAuth } from '@core/auth/AuthContext';
 import { useTheme } from '@core/theme/ThemeContext';
 import { BadgeVault } from './BadgeVault';
 import { AVATARS } from '../data/avatars';
-import { LogOut, Settings, Camera, ShieldCheck, Lock, Sun, Moon } from 'lucide-react';
+import { LogOut, Settings, Camera, ShieldCheck, Lock, Sun, Moon, Award, Calendar } from 'lucide-react';
 
 /**
  * HERO PROFILE
@@ -12,8 +12,12 @@ import { LogOut, Settings, Camera, ShieldCheck, Lock, Sun, Moon } from 'lucide-r
  * Visualizes their rank, XP, streaks, and unlocked badges.
  */
 
-export const HeroProfile: React.FC = () => {
-    const { stats, updateStats } = useProgression();
+interface Props {
+    onViewHistory?: () => void;
+}
+
+export const HeroProfile: React.FC<Props> = ({ onViewHistory }) => {
+    const { stats, updateProfileDetails } = useProgression();
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const [isEditingAvatar, setIsEditingAvatar] = useState(false);
@@ -23,7 +27,7 @@ export const HeroProfile: React.FC = () => {
 
     const handleSelectAvatar = async (avatarId: string) => {
         console.log(`[Profile] Persisting avatar selection: ${avatarId}`);
-        await updateStats({ avatarId });
+        await updateProfileDetails({ avatarId });
         setIsEditingAvatar(false);
     };
 
@@ -36,13 +40,6 @@ export const HeroProfile: React.FC = () => {
                 <div className="absolute -top-10 -left-10 w-40 h-40 bg-app-primary/5 rounded-full blur-3xl" />
 
                 <div className="absolute top-6 right-8 flex gap-3">
-                    <button
-                        onClick={toggleTheme}
-                        className="p-3 bg-app-bg text-text-muted hover:text-app-primary border border-app-border rounded-2xl transition-all shadow-sm active:scale-95"
-                        title="Toggle Light/Dark Theme"
-                    >
-                        {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-                    </button>
                     <button className="p-3 bg-app-bg text-text-muted hover:text-app-primary border border-app-border rounded-2xl transition-all hover:rotate-90 shadow-sm active:scale-95">
                         <Settings size={20} />
                     </button>
@@ -66,10 +63,66 @@ export const HeroProfile: React.FC = () => {
 
                 <h2 className="text-3xl font-black text-text-main tracking-tight">{user?.displayName || "Young Shinobi"}</h2>
                 <div className="flex justify-center mt-3">
-                    <div className="px-5 py-1.5 bg-app-primary/10 text-app-primary border border-app-primary/20 rounded-full">
+                    <div className="px-5 py-1.5 bg-app-primary/10 text-app-primary border border-app-primary/20 rounded-full flex items-center gap-2">
+                        <Award size={14} className="animate-pulse" />
                         <p className="text-[11px] font-black uppercase tracking-[0.2em] italic">Hero Level {stats.heroLevel} Disciple</p>
                     </div>
                 </div>
+            </div>
+
+            {/* Settings & Archive List */}
+            <div className="bg-app-surface border border-app-border rounded-[40px] overflow-hidden shadow-sm">
+                {/* Theme Toggle */}
+                <div className="p-6 border-b border-app-border flex items-center justify-between group">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-app-bg rounded-2xl text-app-primary group-hover:rotate-12 transition-transform">
+                            {theme === 'dark' ? <Moon size={22} /> : <Sun size={22} />}
+                        </div>
+                        <div>
+                            <p className="font-black text-text-main">Night Mode</p>
+                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Toggle app appearance</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={toggleTheme}
+                        className={`w-14 h-8 rounded-full transition-all relative border-2 ${theme === 'dark' ? 'bg-app-primary border-app-primary' : 'bg-app-bg border-app-border'
+                            }`}
+                    >
+                        <div className={`absolute top-1 w-4.5 h-4.5 bg-white rounded-full shadow-md transition-all ${theme === 'dark' ? 'left-7' : 'left-1'
+                            }`} />
+                    </button>
+                </div>
+
+                {/* History Archive */}
+                <button
+                    onClick={onViewHistory}
+                    className="w-full p-6 border-b border-app-border flex items-center justify-between group hover:bg-app-bg/50 transition-colors"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-app-bg rounded-2xl text-violet-500 group-hover:scale-110 transition-transform">
+                            <Calendar size={22} />
+                        </div>
+                        <div className="text-left">
+                            <p className="font-black text-text-main">Past Adventures</p>
+                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Review results & history</p>
+                        </div>
+                    </div>
+                    <Settings size={18} className="text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+
+                {/* Logout */}
+                <button
+                    onClick={logout}
+                    className="w-full p-6 flex items-center gap-4 text-rose-500 hover:bg-rose-50/50 transition-colors group"
+                >
+                    <div className="p-3 bg-rose-500/10 rounded-2xl group-hover:rotate-12 transition-transform">
+                        <LogOut size={22} />
+                    </div>
+                    <div className="text-left">
+                        <p className="font-black">Sign Out</p>
+                        <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">Leave command center</p>
+                    </div>
+                </button>
             </div>
 
             {/* Achievement Vault Section */}
@@ -91,24 +144,14 @@ export const HeroProfile: React.FC = () => {
 
             {/* Core Statistics Board */}
             <div className="grid grid-cols-2 gap-6">
-                <div className="bg-app-surface border border-app-border p-8 rounded-[40px] text-center shadow-sm group hover:border-app-primary/40 transition-all">
-                    <p className="text-4xl font-black text-text-main group-hover:scale-110 transition-transform">{stats.powerPoints.toLocaleString()}</p>
+                <div className="bg-app-surface border border-app-border p-8 rounded-[40px] text-center shadow-sm group transition-all">
+                    <p className="text-4xl font-black text-text-main">{stats.powerPoints.toLocaleString()}</p>
                     <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mt-3">Total Power (XP)</p>
                 </div>
-                <div className="bg-app-surface border border-app-border p-8 rounded-[40px] text-center shadow-sm group hover:border-orange-500/40 transition-all">
-                    <p className="text-4xl font-black text-text-main group-hover:scale-110 transition-transform">{stats.streakCount}</p>
+                <div className="bg-app-surface border border-app-border p-8 rounded-[40px] text-center shadow-sm group transition-all">
+                    <p className="text-4xl font-black text-text-main">{stats.streakCount}</p>
                     <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mt-3">Day Training Streak</p>
                 </div>
-            </div>
-
-            {/* Exit Path */}
-            <div className="pt-4">
-                <button
-                    onClick={logout}
-                    className="w-full py-6 flex items-center justify-center gap-3 text-rose-500 font-black uppercase tracking-[0.2em] text-xs hover:bg-rose-50 rounded-[28px] border-2 border-transparent hover:border-rose-100 transition-all"
-                >
-                    <LogOut size={20} /> Leave Command Center
-                </button>
             </div>
 
             {/* Avatar Selector Modal */}
@@ -119,11 +162,11 @@ export const HeroProfile: React.FC = () => {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <header className="mb-10">
-                            <h4 className="text-2xl font-black text-text-main tracking-tight">Select Your Identity</h4>
+                            <h2 className="text-2xl font-black text-text-main tracking-tight">Select Your Identity</h2>
                             <p className="text-sm text-text-muted font-medium mt-1">Unlock new masks by reaching higher Hero Levels.</p>
                         </header>
 
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-6 mb-10 max-h-[40vh] overflow-y-auto p-2">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-6 mb-10 overflow-y-auto max-h-[40vh] p-2">
                             {AVATARS.map((avatar) => {
                                 const isLocked = stats.heroLevel < avatar.minLevel;
                                 const isSelected = stats.avatarId === avatar.id;
@@ -133,23 +176,18 @@ export const HeroProfile: React.FC = () => {
                                         disabled={isLocked}
                                         onClick={() => handleSelectAvatar(avatar.id)}
                                         className={`group relative aspect-square rounded-[32px] bg-app-bg border-2 flex items-center justify-center transition-all ${!isLocked
-                                                ? isSelected ? 'border-app-primary scale-105 shadow-xl shadow-app-primary/20' : 'border-app-border hover:border-app-primary hover:scale-105 hover:shadow-xl'
+                                                ? isSelected ? 'border-app-primary scale-105 shadow-lg shadow-app-primary/20' : 'border-app-border hover:border-app-primary'
                                                 : 'opacity-40 cursor-not-allowed bg-app-surface/50 border-app-border/10'
                                             }`}
-                                        title={isLocked ? `Required level: ${avatar.minLevel}` : avatar.label}
                                     >
-                                        {isLocked && (
-                                            <div className="absolute inset-0 flex items-center justify-center z-10 text-text-muted">
-                                                <Lock size={20} />
-                                            </div>
-                                        )}
+                                        {isLocked && <Lock size={16} className="absolute z-10 text-text-muted" />}
                                         <img
                                             src={avatar.url}
                                             alt={avatar.label}
                                             className={`w-14 h-14 object-cover ${isLocked ? 'grayscale' : ''}`}
                                         />
                                         {!isLocked && (isSelected || !isLocked) && (
-                                            <p className="absolute -bottom-10 left-0 right-0 text-[8px] font-black uppercase text-text-muted opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap overflow-hidden">
+                                            <p className="absolute -bottom-10 left-0 right-0 text-[8px] font-black uppercase text-text-muted opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {avatar.label}
                                             </p>
                                         )}
