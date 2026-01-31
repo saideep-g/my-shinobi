@@ -140,27 +140,58 @@ Sprint 3 delivered the "Brain" of My-Shinobi, connecting interactive content wit
 
 ---
 
+## 🎖️ Sprint 4: The Student Experience & Personalization (Completed)
+Sprint 4 focused on the "Human Layer"—transforming raw Bayesian data into a polished, encouraging, and highly personal student sanctuary.
+
+### 👤 Identity & Sanctuary
+*   **Hero Profile**: A dedicated personal dashboard where students can track their accumulated **Power Points (PP)**, Day Streaks, and Hero Rank.
+*   **Avatar Selection**: Implemented an unlockable avatar system (using DiceBear). Some identities (like the "Dragon Spirit") are level-gated, providing long-term incentive.
+*   **Honors Vault**: A high-contrast trophy cabinet that houses the student's earned badges, providing immediate visual confirmation of their hard work.
+
+### 🧭 The Command Center
+*   **Universal Navigation**: A glass-morphic navigation system featuring a sticky status header (Level/Avatar) and a mobile-optimized bottom navigation bar.
+*   **App Controller**: A central view-orchestrator that enables seamless transitions between the high-speed **Quest Shell** and the deep-focus **Study Era Library**.
+*   **Shell Switcher**: Integrated logic to toggle between "Gamified Path" and "Structured Syllabus" views without losing application state.
+
+### 📚 Curriculum Drill-Down
+*   **Study Era Library**: A desktop-friendly, hierarchical view of the Grade 7 English syllabus. It allows students to focus on specific modules (e.g., "Present Tense Mastery") outside of the random quest loop.
+*   **Knowledge Signals**: Every atom in the library is equipped with a **Mastery Gauge**, visualizing the underlying Bayesian stability of that specific concept.
+*   **Subject Overview**: Summary cards providing a high-level "Radar" view: Syllabus Completion %, Average Knowledge Signal (Global Stability), and Subject Rank.
+
+### 🔄 Remediation & Sharing
+*   **Mistake Review**: A "remastery" loop that automatically captures incorrect answers and presents them for immediate pedagogical correction and explanation before the session ends.
+*   **Parental Reports**: Implemented "Proof of Progress" sharing. Using **`html2canvas`** and the **Web Share API**, students can generate a premium achievement card to send to parents via WhatsApp or Social Media.
+
+### 🏎️ Performance & Polish
+*   **Skeleton UI System**: Replaced generic loading spinners with pulse-animated placeholders, eliminating **Cumulative Layout Shift (CLS)** and improving perceived load speed.
+*   **Loading Guard**: A deterministic hydration service that ensures Firebase Auth and the IndexedDB engine are fully ready before the first question is rendered.
+*   **Radar Memoization**: Optimized the Intelligence Radar using `React.memo` and `useMemo` to maintain a 60fps experience even with comprehensive mastery maps.
+
+---
+
 ## 📂 Project Structure
 The project follows a Domain-Driven Design (DDD) inspired structure:
 
 ```
 src/
-├── core/               # Foundational services (Auth, Database Engine, Bayesian)
+├── core/               # Foundational services (Auth, Database, Bayesian Engine)
+│   └── media/          # AudioPlayer, ShareService, Asset Resolvers
 ├── features/           # Feature-specific logic
 │   ├── admin/          # Workbench & Bundle Publishing
-│   ├── assessment/     # Mastery Radar & Logic
-│   ├── curriculum/     # Grade-based content skeletons
-│   ├── progression/    # Hero levels, Achievements, Path Map
-│   └── questions/      # THE ENGINE (Registry, Renderer, Types)
-├── shared/             # Reusable UI (Media, Layouts, Progression cards)
-├── services/           # Business logic (Sync, Validation)
-└── types/              # Single Source of Truth
+│   ├── assessment/     # Session Machine, Mistake Review, Radar
+│   ├── curriculum/     # Grade-based content skeletons & data
+│   ├── progression/    # Profile, Avatars, Badges, Daily Missions
+│   └── questions/      # THE ENGINE (Registry, Renderer, Lensing)
+├── shared/             # Reusable UI (Skeleton, Layouts, UniversalNav)
+├── services/           # Business logic (Sync, Validation, Mission logic)
+└── types/              # Single Source of Truth (Schemas)
 ```
 
 ---
 
-## 🔜 Next Steps: Sprint 4
-*   **Social Domain**: Implementing Leaderboards and Peer Groups for collaborative learning.
-*   **AI Tutoring Layer**: Integrating LLM-based feedback for missed questions.
-*   **Global Search**: Unified search across the curriculum and library.
-*   **Diagnostic Assessments**: Adaptive testing to "baseline" new students.
+## 🏗️ Sprint 5: Admin Intelligence & DevOps (Planned)
+*   **Phase 41: Coverage Radar**: An admin-only tool to identify gaps in the question library based on curriculum definitions.
+*   **Phase 42: Student Voice Feed**: A real-time tracker for the most common misconceptions across the student body.
+*   **Phase 43: Warp Service**: Tools for QA to "warp" to specific states or inject Bayesian data for testing.
+*   **Phase 44: CI/CD Pipeline**: Automated Playwright E2E tests for the "Robot Student" to verify mastery calculations.
+*   **Phase 50: Final Migration**: Transitioning permanent data from the Blue Ninja legacy platform.
