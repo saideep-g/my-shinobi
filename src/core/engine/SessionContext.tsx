@@ -6,6 +6,8 @@ import { useIntelligence } from './IntelligenceContext';
 import { useAuth } from '@core/auth/AuthContext';
 import { assessmentManager } from '@/features/assessment/services/assessmentManager';
 import { logService } from '@/features/assessment/services/logService';
+import { useProgression } from './ProgressionContext';
+import { PROGRESSION_CONSTANTS } from './progression';
 
 /**
  * SESSION CONTEXT
@@ -29,6 +31,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user } = useAuth();
     const { mastery, recordAttempt, getAtomMastery } = useIntelligence();
+    const { addXP, updateStreak } = useProgression();
 
     const [activeBundle, setActiveBundle] = useState<SubjectBundle | null>(null);
     const [currentQuestion, setCurrentQuestion] = useState<QuestionBase | null>(null);
@@ -80,6 +83,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const log = logService.createLog(currentQuestion, isCorrect, duration, mBefore, mAfter);
         await assessmentManager.appendLog(activeSessionId, log);
 
+        // 5. Award XP based on result
+        const xpAmount = isCorrect ? PROGRESSION_CONSTANTS.XP_PER_CORRECT : PROGRESSION_CONSTANTS.XP_PER_ATTEMPT;
+        await addXP(xpAmount);
+        await updateStreak();
+
         // 5. Add current question to recent history (queue of 10)
         const updatedRecent = [...recentIds, currentQuestion.id].slice(-10);
         setRecentIds(updatedRecent);
@@ -95,7 +103,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
             setIsSessionComplete(true);
             setCurrentQuestion(null);
         }
-    }, [currentQuestion, activeBundle, activeSessionId, mastery, recentIds, recordAttempt, getAtomMastery]);
+    }, [currentQuestion, activeBundle, activeSessionId, mastery, recentIds, recordAttempt, getAtomMastery, addXP, updateStreak]);
 
     return (
         <SessionContext.Provider value={{

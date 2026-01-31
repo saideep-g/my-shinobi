@@ -17,11 +17,14 @@ export interface StudentStats {
     activityLog: string[];
     /** User-selected UI layout ('quest' | 'era') */
     preferredLayout: 'quest' | 'era';
+    /** Collection of earned badges */
+    achievements?: Achievement[];
 }
 
 export interface Achievement {
     id: string;
     name: string;
+    description: string;
     icon: string;
     unlockedAt: number;
     criteria: string;

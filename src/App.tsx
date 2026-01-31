@@ -86,51 +86,54 @@ const LoginPage = () => {
 
 import { IntelligenceProvider } from '@core/engine/IntelligenceContext';
 import { SessionProvider } from '@core/engine/SessionContext';
+import { ProgressionProvider } from '@core/engine/ProgressionContext';
 
 export default function App() {
     return (
         <ThemeProvider>
             <AuthProvider>
                 <IntelligenceProvider>
-                    <SessionProvider>
-                        <Router>
-                            <Routes>
-                                {/* Public Routes */}
-                                <Route path="/login" element={<LoginPage />} />
+                    <ProgressionProvider>
+                        <SessionProvider>
+                            <Router>
+                                <Routes>
+                                    {/* Public Routes */}
+                                    <Route path="/login" element={<LoginPage />} />
 
-                                {/* Student Protected Routes (Wrapped in Shell Selector) */}
-                                <Route
-                                    path="/dashboard"
-                                    element={
-                                        <ProtectedRoute>
-                                            <RoleGuard allowedRoles={['STUDENT', 'ADMIN']}>
-                                                <StudentShellSelector>
-                                                    <StudentDashboard />
-                                                </StudentShellSelector>
-                                            </RoleGuard>
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Student Protected Routes (Wrapped in Shell Selector) */}
+                                    <Route
+                                        path="/dashboard"
+                                        element={
+                                            <ProtectedRoute>
+                                                <RoleGuard allowedRoles={['STUDENT', 'ADMIN']}>
+                                                    <StudentShellSelector>
+                                                        <StudentDashboard />
+                                                    </StudentShellSelector>
+                                                </RoleGuard>
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* Other student routes will go here as well, also wrapped in StudentShellSelector */}
+                                    {/* Other student routes will go here as well, also wrapped in StudentShellSelector */}
 
-                                {/* Admin Only Routes */}
-                                <Route
-                                    path="/admin/*"
-                                    element={
-                                        <ProtectedRoute>
-                                            <RoleGuard allowedRoles={['ADMIN']} redirectTo="/dashboard">
-                                                <AdminDashboard />
-                                            </RoleGuard>
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Admin Only Routes */}
+                                    <Route
+                                        path="/admin/*"
+                                        element={
+                                            <ProtectedRoute>
+                                                <RoleGuard allowedRoles={['ADMIN']} redirectTo="/dashboard">
+                                                    <AdminDashboard />
+                                                </RoleGuard>
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* Default Redirect */}
-                                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                            </Routes>
-                        </Router>
-                    </SessionProvider>
+                                    {/* Default Redirect */}
+                                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                                </Routes>
+                            </Router>
+                        </SessionProvider>
+                    </ProgressionProvider>
                 </IntelligenceProvider>
             </AuthProvider>
         </ThemeProvider>
