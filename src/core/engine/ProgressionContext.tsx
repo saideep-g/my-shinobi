@@ -28,7 +28,11 @@ const DEFAULT_STATS: StudentStats = {
     streakCount: 0,
     lastActiveDate: new Date().toISOString().split('T')[0],
     activityLog: [],
-    preferredLayout: 'quest' // Matches StudentStats type from progression.ts
+    preferredLayout: 'quest',
+    sessionConfig: {
+        questionsPerSession: 20,
+        isDeveloperMode: false
+    }
 };
 
 const ProgressionContext = createContext<ProgressionContextType | undefined>(undefined);

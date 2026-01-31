@@ -33,7 +33,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user } = useAuth();
     const { mastery, recordAttempt, getAtomMastery } = useIntelligence();
-    const { addXP, updateStreak } = useProgression();
+    const { stats, addXP, updateStreak } = useProgression();
     const { refreshProgress } = useMission();
 
     const [activeBundle, setActiveBundle] = useState<SubjectBundle | null>(null);
@@ -103,7 +103,19 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const updatedRecent = [...recentIds, currentQuestion.id].slice(-10);
         setRecentIds(updatedRecent);
 
-        // 6. Select the next question based on the UPDATED mastery and history
+        // 6. Check for session completion override (Speed Run Toggle)
+        const sessionLimit = stats.sessionConfig?.questionsPerSession || 20;
+        const currentCount = updatedRecent.length;
+
+        if (currentCount >= sessionLimit) {
+            console.log(`[Session] Reached limit of ${sessionLimit} questions. Finalizing...`);
+            await assessmentManager.completeSession(activeSessionId);
+            setIsSessionComplete(true);
+            setCurrentQuestion(null);
+            return;
+        }
+
+        // 7. Select the next question based on the UPDATED mastery and history
         const nextQ = selectNextQuestion(activeBundle, mastery, updatedRecent);
 
         if (nextQ) {
@@ -114,7 +126,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
             setIsSessionComplete(true);
             setCurrentQuestion(null);
         }
-    }, [currentQuestion, activeBundle, activeSessionId, mastery, recentIds, recordAttempt, getAtomMastery, addXP, updateStreak]);
+    }, [currentQuestion, activeBundle, activeSessionId, mastery, recentIds, recordAttempt, getAtomMastery, addXP, updateStreak, stats]);
 
     return (
         <SessionContext.Provider value={{

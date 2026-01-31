@@ -21,6 +21,11 @@ export interface StudentStats {
     achievements?: Achievement[];
     /** Persisted avatar preference */
     avatarId?: string;
+    /** Admin-controlled session constraints */
+    sessionConfig?: {
+        questionsPerSession: number; // e.g., 3 for test, 20 for standard
+        isDeveloperMode: boolean;
+    };
 }
 
 export interface Achievement {
