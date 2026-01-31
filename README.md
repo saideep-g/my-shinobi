@@ -211,7 +211,47 @@ Sprint 5 focused on bulletproofing the platform through advanced routing, automa
 
 ---
 
-## 🚀 Sprint 6: Vertical Content & Final Polish (Planned)
-*   **Syllabus Expansion**: Fully populating the "Math Grade 7" and "Science Grade 7" bundles with AI-generated, human-verified questions.
-*   **Advanced Remediation**: Implementing branching remedial videos for atoms where the knowledge signal remains low after 3 sessions.
-*   **Performance 2.0**: Migrating from IndexedDB to a persistent Service Worker for true "Instant-On" capabilities.
+---
+
+## 🔢 Sprint 6: Multiplication Mastery & Dynamic Intelligence (Completed)
+Sprint 6 introduced the "Dynamic Intelligence" layer, enabling the platform to generate personalized curriculum content on-the-fly and visualize knowledge in high-resolution grids.
+
+### 🧠 Dynamic Generation Engine
+*   **On-the-Fly QuestionBase**: Implemented the `tableGenerator` service. Unlike static subjects (English), **Multiplication Tables** use a generator that constructs unique questions based on the student's current Bayesian "Weak Point."
+*   **Stable Hashing for Dynamic Logic**: Even though questions are generated randomly, they produce a stable `contentHash` based on the mathematical fact (e.g., $7 \times 8$). This ensures the Bayesian engine tracks progress across billions of possible generated instances.
+*   **Predictive Difficulty Scaling**: The generator can shift from single-fact queries (Easy) to full "Complete the Table" grids (Medium/Hard) as the atom's mastery signal grows.
+
+### 🗺️ Multi-Dimensional Heatmaps
+*   **Activity Heatmap (Practice Consistency)**: A GitHub-style 12-week frequency tracker. It visualizes daily engagement levels, helping students gamify their "Learning Streak" and identify periods of low activity.
+*   **The 12x12 Knowledge Grid**: A specialized visualization for arithmetic. It maps the student's mastery of the multiplication table (1x1 to 12x12) into a high-contrast traffic-light grid.
+    *   **Mastered (Green)**: Stability $> 85\%$.
+    *   **Developing (Yellow)**: Stability $50-84\%$.
+    *   **Critical (Red)**: Stability $< 50\%$.
+
+### 🎯 Math-Specialized Interaction
+*   **Arithmetic Precision Template**: A custom `math-table` interaction UI optimized for speed and accuracy. It features auto-focusing numeric inputs, haptic-ready feedback, and immediate "Pedagogical Correction" (showing the correct product upon failure).
+*   **Sequential Mastery Unlocking**: Implemented strict auto-progression. The **Table 7** atom remains mathematically locked until the **Table 6** atom achieves high Bayesian stability ($> 0.85$), ensuring no gaps in the foundation.
+
+---
+
+## 📜 Project Architecture (Updated)
+We follow a strict Domain-Driven Design (DDD) pattern to ensure the "Dynamic" and "Static" engines co-exist cleanly:
+
+```
+src/
+├── core/               # "The Brain" (Bayesian Engine, Selection Orchestrator)
+│   └── engine/         # selection.ts (Now supports Dynamic Bundle logic)
+├── features/           # Domain-Specific Modules
+│   ├── assessment/     # Session Machine & Content Generators (tableGenerator.ts)
+│   ├── progression/    # Visualizations (ActivityHeatmap, TableMasteryHeatmap)
+│   └── questions/      # Template Registry (math-table-v1, mcq-v1)
+├── curriculum/         # Data Skeleton (Multiplication Tables Bundle)
+└── shared/             # Universal Layouts & Design Tokens
+```
+
+---
+
+## 🚀 Sprint 7: High-Fidelity Feedback & AI Content (Planned)
+*   **AI Explained**: Integrating LLM-based explanation generation for mistakes, tailored to the student's specific error pattern.
+*   **Global Leaderboards**: Competitive peer-groups for schools/classes based on "Power Points" and "Mastery Density."
+*   **Voice Interactions**: Implementing Web Speech API for English speaking and pronunciation exercises.
