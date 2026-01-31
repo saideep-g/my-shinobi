@@ -3,51 +3,66 @@ import { ThemeProvider } from '@core/theme/ThemeContext';
 import { AuthProvider } from '@core/auth/AuthContext';
 import { ProtectedRoute } from '@core/auth/ProtectedRoute';
 import { RoleGuard } from '@core/auth/RoleGuard';
+import { StudentShellSelector } from '@layouts/StudentShellSelector';
+import { useTheme } from '@core/theme/ThemeContext';
 
 // Placeholder components for the new structure
 const AdminDashboard = () => (
-    <div className="p-12 bg-app-bg min-h-screen text-text-main flex flex-col items-center justify-center">
-        <div className="bg-app-surface p-8 rounded-3xl border border-app-border shadow-2xl text-center">
-            <div className="text-6xl mb-4 text-app-primary font-black tracking-tighter italic">MY-SHINOBI</div>
-            <div className="text-xl font-black uppercase text-rose-500 tracking-widest bg-rose-500/10 py-2 px-6 rounded-full inline-block mb-4">
-                Admin Workbench (Secret)
-            </div>
-            <p className="text-text-muted max-w-sm">
-                Welcome to the restricted command center. Only master ninjas with administrative clearance can view this scroll.
-            </p>
+    <div className="p-12 text-center">
+        <div className="text-xl font-black uppercase text-rose-500 tracking-widest bg-rose-500/10 py-2 px-6 rounded-full inline-block mb-4">
+            Admin Workbench (Secret)
         </div>
+        <p className="text-text-muted">Master ninja command center.</p>
     </div>
 );
 
 const StudentDashboard = () => (
-    <div className="p-12 bg-app-bg min-h-screen text-text-main flex flex-col items-center justify-center">
-        <div className="bg-app-surface p-8 rounded-3xl border border-app-border shadow-2xl text-center">
-            <div className="text-6xl mb-4 text-app-primary font-black tracking-tighter italic">MY-SHINOBI</div>
-            <div className="text-xl font-black uppercase text-app-accent tracking-widest bg-app-accent/10 py-2 px-6 rounded-full inline-block mb-4">
-                Student Quest Hub
+    <div className="space-y-6">
+        <div className="bg-app-surface p-8 rounded-3xl border border-app-border shadow-xl">
+            <h2 className="text-2xl font-bold mb-2">Welcome, Shinobi</h2>
+            <p className="text-text-muted">Your learning journey continues here.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-app-primary/10 p-6 rounded-2xl border border-app-primary/20">
+                <h3 className="font-bold text-app-primary mb-2">Daily Quest</h3>
+                <p className="text-sm text-text-main">Master 5 Present Simple atoms today.</p>
             </div>
-            <p className="text-text-muted max-w-sm">
-                Your journey begins here. Master your tenses, earn power points, and rise through the ranks.
-            </p>
+            <div className="bg-app-secondary/10 p-6 rounded-2xl border border-app-secondary/20">
+                <h3 className="font-bold text-app-secondary mb-2">Skill Progress</h3>
+                <p className="text-sm text-text-main">English Grade 7: 45% Completed</p>
+            </div>
         </div>
     </div>
 );
 
-const LoginPage = () => (
-    <div className="p-12 bg-app-bg min-h-screen text-text-main flex flex-col items-center justify-center">
-        <div className="bg-app-surface p-12 rounded-3xl border border-app-border shadow-2xl text-center max-w-sm w-full">
-            <div className="text-5xl mb-8 text-app-primary font-black tracking-tighter italic">MY-SHINOBI</div>
-            <div className="aspect-square bg-app-bg flex items-center justify-center rounded-3xl mb-8 text-7xl">
-                🥷
+const LoginPage = () => {
+    const { theme, toggleTheme } = useTheme();
+    return (
+        <div className="p-12 bg-app-bg min-h-screen flex flex-col items-center justify-center transition-colors duration-300">
+            <div className="absolute top-8 right-8">
+                <button
+                    onClick={toggleTheme}
+                    className="p-3 bg-app-surface border border-app-border rounded-2xl shadow-lg hover:scale-110 transition-transform active:scale-95"
+                    aria-label="Toggle Theme"
+                >
+                    {theme === 'light' ? '🌙' : '☀️'}
+                </button>
             </div>
-            <h2 className="text-2xl font-bold mb-2">Gate of Entry</h2>
-            <p className="text-text-muted mb-8 text-sm">Please sign in to continue your path of knowledge.</p>
-            <button className="w-full py-4 bg-app-primary text-white rounded-xl font-bold shadow-lg hover:shadow-app-primary/20 hover:-translate-y-0.5 transition-all active:scale-95">
-                Unlock with Firebase
-            </button>
+            <div className="bg-app-surface p-12 rounded-3xl border border-app-border shadow-2xl text-center max-w-sm w-full">
+                <div className="text-5xl mb-8 text-app-primary font-black tracking-tighter italic">MY-SHINOBI</div>
+                <div className="aspect-square bg-app-bg flex items-center justify-center rounded-3xl mb-8 text-7xl">
+                    🥷
+                </div>
+                <h2 className="text-2xl font-bold mb-2">Gate of Entry</h2>
+                <p className="text-text-muted mb-8 text-sm">Please sign in to continue.</p>
+                <button className="w-full py-4 bg-app-primary text-white rounded-xl font-bold shadow-lg">
+                    Unlock with Firebase
+                </button>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 export default function App() {
     return (
@@ -58,17 +73,21 @@ export default function App() {
                         {/* Public Routes */}
                         <Route path="/login" element={<LoginPage />} />
 
-                        {/* Student Protected Routes */}
+                        {/* Student Protected Routes (Wrapped in Shell Selector) */}
                         <Route
                             path="/dashboard"
                             element={
                                 <ProtectedRoute>
                                     <RoleGuard allowedRoles={['STUDENT', 'ADMIN']}>
-                                        <StudentDashboard />
+                                        <StudentShellSelector>
+                                            <StudentDashboard />
+                                        </StudentShellSelector>
                                     </RoleGuard>
                                 </ProtectedRoute>
                             }
                         />
+
+                        {/* Other student routes will go here as well, also wrapped in StudentShellSelector */}
 
                         {/* Admin Only Routes */}
                         <Route

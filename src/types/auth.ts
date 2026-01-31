@@ -14,6 +14,8 @@ export interface UserProfile {
     grade: number;
     createdAt: number;
     updatedAt: number;
+    /** User-selected UI layout ('mobile-quest' | 'study-era') */
+    preferredLayout?: 'mobile-quest' | 'study-era';
     /** Links to related profiles (e.g., Parent linking to Student) */
     connections: {
         targetUid: string;
