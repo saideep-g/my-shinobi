@@ -41,10 +41,25 @@ export const selectNextQuestion = (
         return currMastery < prevMastery ? curr : prev;
     });
 
-    // 3. Dynamic Generation Hook (New for Sprint 6)
+    // 3. Dynamic Generation Hook (Sprint 6: 70/30 Rule)
     if (bundle.isDynamic) {
-        console.log(`[SelectionEngine] Generating dynamic question for atom: ${priorityAtom.id}`);
-        return generateMathTableQuestion(priorityAtom.id);
+        // 70% chance to pick the lowest-mastery unlocked atom (Current Path)
+        // 30% chance to pick any other mastered atom (Review facts)
+        const isReview = Math.random() < 0.3;
+        const masteredAtoms = bundle.curriculum.chapters
+            .flatMap(ch => ch.atoms)
+            .filter(a => (masteryMap[a.id] || 0) >= 0.85);
+
+        let targetAtom = priorityAtom;
+        if (isReview && masteredAtoms.length > 0) {
+            targetAtom = masteredAtoms[Math.floor(Math.random() * masteredAtoms.length)];
+            console.log(`[SelectionEngine] Review Loop: Targetting mastered atom: ${targetAtom.id}`);
+        } else {
+            console.log(`[SelectionEngine] Current Path: Targetting weakest atom: ${targetAtom.id}`);
+        }
+
+        const masteryVal = masteryMap[targetAtom.id] || 0;
+        return generateMathTableQuestion(targetAtom.id, masteryVal);
     }
 
     // 4. Static Question Selection

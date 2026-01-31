@@ -3,10 +3,9 @@ import { QuestionBase } from '@/types/questions';
 /**
  * MULTIPLICATION TABLE GENERATOR
  * Generates dynamic QuestionBase objects for the Math Table subject.
- * These are not stored in the static bundle but created on-the-fly.
  */
 
-export const generateMathTableQuestion = (atomId: string): QuestionBase => {
+export const generateMathTableQuestion = (atomId: string, masteryVal: number = 0): QuestionBase => {
     // 1. Identify Target Table from Atom ID (e.g., 'table-7')
     const tableNum = parseInt(atomId.split('-').pop() || '1');
 
@@ -14,25 +13,30 @@ export const generateMathTableQuestion = (atomId: string): QuestionBase => {
     const multiplier = Math.floor(Math.random() * 12) + 1;
     const answer = tableNum * multiplier;
 
-    // 3. Generate a stable but unique ID for this instance
+    // 3. Determine Interaction Type (Fact vs Missing Multiplier)
+    // If mastery is high (> 0.8), introduce missing multipliers with 40% probability
+    const isMissingMultiplier = masteryVal > 0.8 && Math.random() > 0.6;
+    const type = isMissingMultiplier ? 'missing-multiplier' : 'fact';
+
+    // 4. Generate a stable but unique ID for this instance
     const questionId = `dyn-${atomId}-${multiplier}-${Date.now()}`;
 
-    // 4. Construct the standard QuestionBase payload
+    // 5. Construct the standard QuestionBase payload
     return {
         id: questionId,
         atomId: atomId,
         templateId: 'math-table',
         version: 1,
-        difficulty: 'EASY',
-        contentHash: `hash-${tableNum}x${multiplier}`, // Stable hash for similar problems
+        difficulty: isMissingMultiplier ? 'MEDIUM' : 'EASY',
+        contentHash: `hash-${tableNum}x${multiplier}-${type}`, // Stable hash for similar problems
         data: {
-            type: 'fact', // Single fact interaction
+            type: type,
             table: tableNum,
             multiplier: multiplier,
-            correctAnswer: answer.toString(),
+            correctAnswer: isMissingMultiplier ? multiplier.toString() : answer.toString(),
             subject: 'Mathematics'
         },
-        tags: ['multiplication', 'dynamic']
+        tags: ['multiplication', 'dynamic', type]
     };
 };
 

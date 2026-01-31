@@ -11,7 +11,7 @@ import { MasteryMap } from '@/types/progression';
 
 interface IntelligenceContextType {
     mastery: MasteryMap;
-    recordAttempt: (atomId: string, isCorrect: boolean) => Promise<void>;
+    recordAttempt: (atomId: string, isCorrect: boolean, contentHash?: string) => Promise<void>;
     getAtomMastery: (atomId: string) => number;
 }
 
@@ -31,13 +31,21 @@ export const IntelligenceProvider: React.FC<{ children: React.ReactNode }> = ({ 
         loadMastery();
     }, [user]);
 
-    const recordAttempt = async (atomId: string, isCorrect: boolean) => {
+    const recordAttempt = async (atomId: string, isCorrect: boolean, contentHash?: string) => {
         if (!user) return;
 
-        const currentProb = mastery[atomId] || 0.25; // Default P(L0)
-        const newProb = updateMastery(currentProb, isCorrect);
+        const updatedMap = { ...mastery };
 
-        const updatedMap = { ...mastery, [atomId]: newProb };
+        // 1. Update Atom-Level Mastery (General concept)
+        const currentAtomProb = updatedMap[atomId] || 0.25;
+        updatedMap[atomId] = updateMastery(currentAtomProb, isCorrect);
+
+        // 2. Update Fact-Level Mastery (Specific fluency)
+        if (contentHash) {
+            const currentFactProb = updatedMap[contentHash] || 0.25;
+            updatedMap[contentHash] = updateMastery(currentFactProb, isCorrect);
+        }
+
         setMastery(updatedMap);
 
         // Persist to local storage (IndexedDB) immediately

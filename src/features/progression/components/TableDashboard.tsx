@@ -1,13 +1,14 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getBundleById } from '@features/curriculum/data/bundleRegistry';
-import { TableMasteryHeatmap } from './TableMasteryHeatmap';
+import { TablesMasteryDashboard } from './TablesMasteryDashboard';
+import { FluencyHeatmap } from './FluencyHeatmap';
 import { ChevronLeft, Sword } from 'lucide-react';
 
 /**
  * TABLE DASHBOARD
  * A specialized hub for Multiplication Tables.
- * Combines the 12x12 Mastery Grid with a quick-start action.
+ * Combines granular mastery stats with a 12x12 fluency grid.
  */
 
 export const TableDashboard: React.FC = () => {
@@ -59,15 +60,18 @@ export const TableDashboard: React.FC = () => {
                     </div>
                 </div>
 
-                {/* 2. The Mastery Grid */}
-                <TableMasteryHeatmap />
+                {/* 2. Fluency Heatmap (The 12x12 Grid) */}
+                <FluencyHeatmap />
 
-                {/* 3. Help Text */}
+                {/* 3. Detailed Mastery Table */}
+                <TablesMasteryDashboard />
+
+                {/* 4. Help Text */}
                 <div className="p-6 bg-app-surface border border-app-border rounded-3xl">
                     <h5 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3">How it works</h5>
                     <p className="text-xs text-text-muted leading-relaxed">
-                        Mastery is calculated for each table (2-12). Once you reach <strong>85% stability</strong> on a table,
-                        the next one in the sequence will automatically unlock.
+                        Mastery is calculated for each specific fact. The engine uses a <strong>70% Current / 30% Review</strong> rule
+                        to ensure you never forget old tables while mastering new ones.
                     </p>
                 </div>
             </div>

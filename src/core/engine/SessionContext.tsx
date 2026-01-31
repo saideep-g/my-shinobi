@@ -84,7 +84,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const mBefore = mastery[currentQuestion.atomId] || 0.25;
 
         // 2. Record the attempt in the Bayesian engine to update mastery probabilities
-        await recordAttempt(currentQuestion.atomId, isCorrect);
+        await recordAttempt(currentQuestion.atomId, isCorrect, currentQuestion.contentHash);
 
         // 3. Capture mastery after calculation
         const mAfter = getAtomMastery(currentQuestion.atomId);
