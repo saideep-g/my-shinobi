@@ -1,11 +1,13 @@
 import { Grade7EnglishBundle } from './grade-7/english-bundle';
 import { Grade7MathBundle } from './grade-7/math-bundle';
+import { MultiplicationTablesBundle } from './grade-7/multiplication-tables';
 import { SubjectBundle } from '@/types/bundles';
 
 export const BUNDLE_REGISTRY: Record<string, SubjectBundle> = {
     'grade-7-english': Grade7EnglishBundle,
     'english-g7': Grade7EnglishBundle,
-    'grade-7-math': Grade7MathBundle
+    'grade-7-math': Grade7MathBundle,
+    'multiplication-tables': MultiplicationTablesBundle
 };
 
 export const getAllBundles = () => {

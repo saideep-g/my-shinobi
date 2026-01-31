@@ -36,3 +36,28 @@ class TemplateRegistry {
 }
 
 export const questionRegistry = new TemplateRegistry();
+
+// --- BUNDLED REGISTRATION (Sprint 6) ---
+questionRegistry.register({
+    id: 'math-table',
+    name: 'Multiplication Tables',
+    version: 1,
+    componentPath: 'math-table/v1/Component',
+    schema: {}
+});
+
+questionRegistry.register({
+    id: 'mcq',
+    name: 'Multiple Choice',
+    version: 1,
+    componentPath: 'mcq/v1/Component',
+    schema: {}
+});
+
+questionRegistry.register({
+    id: 'sorting',
+    name: 'Sorting',
+    version: 1,
+    componentPath: 'sorting/v1/Component',
+    schema: {}
+});

@@ -77,6 +77,18 @@
 * **Phase 48:** Testing: **E2E Playwright Tests** (Automated "Robot Student" journey).
 * **Phase 49:** DevOps: **Local "Pre-Flight" Script** (Local Test-Before-Deploy pipeline).
 * **Phase 50:** Migration: **Legacy Data Porting** (Blue Ninja -> My-Shinobi schema mapper).
+
+---
+
+### **Sprint 6: Multiplication Mastery (Phases 51-55)**
+*Status: 20% In Progress*
+
+* **Phase 51:** Dynamic Generation: **Table Fact Generator** (On-the-fly QuestionBase creation).
+* **Phase 52:** Visualization: **Activity Heatmap** (Practice frequency tracker).
+* **Phase 53:** Visualization: **Table Mastery Heatmap** (The 12x12 Bayesian Skill Grid).
+* **Phase 54:** Progression: **Auto-Unlock Logic** (Seamless transition from Table N to N+1).
+* **Phase 55:** Mobile UI: **Table Dashboard** (Unified view of Mastery Grid + Quests).
+
 ---
 
 

@@ -13,6 +13,19 @@ import { StudyEraSubjectView } from '@features/progression/components/StudyEraSu
 import { QuestDashboard } from '@features/assessment/components/QuestDashboard';
 import { QuestSessionUI } from '@features/assessment/components/QuestSessionUI';
 import { LoginPage } from '@features/auth/components/LoginPage';
+import { TableDashboard } from '@features/progression/components/TableDashboard';
+import { useParams } from 'react-router-dom';
+
+/**
+ * SUBJECT ROUTE SWITCH
+ * Decides whether to show a specialized dashboard (like Multiplication)
+ * or the standard study path map.
+ */
+const SubjectRouteSwitch = () => {
+    const { subjectId } = useParams<{ subjectId: string }>();
+    if (subjectId === 'multiplication-tables') return <TableDashboard />;
+    return <SubjectMap />;
+};
 
 /**
  * APP ROUTER
@@ -44,7 +57,7 @@ export const AppRouter: React.FC = () => {
 
                         {/* Quest Section */}
                         <Route path="/quest" element={<QuestDashboard />} />
-                        <Route path="/quest/:subjectId" element={<SubjectMap />} />
+                        <Route path="/quest/:subjectId" element={<SubjectRouteSwitch />} />
                         <Route path="/quest/:subjectId/play" element={<QuestSessionUI />} />
 
                         {/* Library Section */}

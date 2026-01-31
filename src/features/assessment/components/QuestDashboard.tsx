@@ -1,6 +1,7 @@
 import React from 'react';
 import { DailyMissionCard } from '@features/progression/components/DailyMissionCard';
 import { SubjectMissionList } from '@features/progression/components/SubjectMissionList';
+import { ActivityHeatmap } from '@features/progression/components/ActivityHeatmap';
 import { getAllBundles } from '@features/curriculum/data/bundleRegistry';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,6 +18,7 @@ export const QuestDashboard: React.FC = () => {
     return (
         <div className="p-6 max-w-md mx-auto space-y-10 animate-in fade-in duration-700">
             <DailyMissionCard />
+            <ActivityHeatmap />
             <SubjectMissionList
                 bundles={bundles}
                 onSelect={(bundle) => navigate(`/quest/${bundle.id}`)}

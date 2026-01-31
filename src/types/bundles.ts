@@ -16,8 +16,10 @@ export interface SubjectBundle {
     // The Curriculum Structure (Chapters, Atoms)
     curriculum: Subject;
 
-    // The Raw Question Bank associated with this subject
+    // The Raw Question Bank associated with this subject (Optional for dynamic bundles)
     questions: QuestionBase[];
+
+    isDynamic?: boolean;
 
     stats?: {
         totalAtoms: number;
