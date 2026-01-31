@@ -3,66 +3,117 @@ import { UniversalNav } from './shared/layouts/UniversalNav';
 import { DailyMissionCard } from '@features/progression/components/DailyMissionCard';
 import { PathToMaster } from '@features/progression/components/PathToMaster';
 import { StudyEraLibrary } from '@features/progression/components/StudyEraLibrary';
+import { HeroProfile } from '@features/progression/components/HeroProfile';
+import { SubjectMissionList } from '@features/progression/components/SubjectMissionList';
+import { SubjectMasteryList } from '@features/progression/components/SubjectMasteryList';
 import { useSession } from '@core/engine/SessionContext';
 import { Grade7EnglishBundle } from '@features/curriculum/data/grade-7/english-bundle';
-import { HeroProfile } from '@features/progression/components/HeroProfile';
+import { Grade7MathBundle } from '@features/curriculum/data/grade-7/math-bundle';
+import { SubjectBundle } from '@/types/bundles';
+import { ChevronLeft } from 'lucide-react';
 
 /**
  * APP CONTROLLER
- * Orchestrates the primary view switching logic for the student experience.
- * Connects the "Quest" (Game) and "Library" (Focus) domains.
+ * Orchestrates the multi-subject dashboard and view switching.
  */
 
 export const AppController: React.FC = () => {
     const [section, setSection] = useState<'quest' | 'library' | 'profile'>('quest');
+    const [selectedBundle, setSelectedBundle] = useState<SubjectBundle | null>(null);
     const { startSession } = useSession();
 
-    /**
-     * Helper to launch a quest for a specific atom.
-     * This bridges the curriculum map to the session engine.
-     */
+    // Active Subjects
+    const activeBundles = [Grade7EnglishBundle, Grade7MathBundle];
+
     const handleLaunchQuest = async (atomId: string) => {
-        console.log(`[Controller] Launching quest for atom: ${atomId}`);
-        // Start session using the Grade 7 bundle
-        await startSession(Grade7EnglishBundle);
+        if (!selectedBundle) return;
+        console.log(`[Controller] Launching quest for atom: ${atomId} in ${selectedBundle.id}`);
+        await startSession(selectedBundle);
     };
 
+    const handleBackToDashboard = () => setSelectedBundle(null);
+
     return (
-        <UniversalNav activeSection={section} setSection={setSection}>
+        <UniversalNav
+            activeSection={section}
+            setSection={(s) => {
+                setSection(s);
+                // Auto-reset selection when switching main sections
+                if (s === 'profile') setSelectedBundle(null);
+            }}
+        >
+            <div className="p-6 pb-32">
 
-            {/* QUEST SECTION: The Gamified Map */}
-            {section === 'quest' && (
-                <div className="max-w-md mx-auto p-6 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <DailyMissionCard />
+                {/* 1. QUEST SECTION */}
+                {section === 'quest' && (
+                    <div className="max-w-md mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        {!selectedBundle ? (
+                            <>
+                                <DailyMissionCard />
+                                <SubjectMissionList
+                                    bundles={activeBundles}
+                                    onSelect={setSelectedBundle}
+                                />
+                            </>
+                        ) : (
+                            <div className="space-y-10">
+                                <header className="flex items-center gap-4">
+                                    <button
+                                        onClick={handleBackToDashboard}
+                                        className="p-3 bg-app-surface border border-app-border rounded-2xl hover:bg-app-bg transition-colors"
+                                    >
+                                        <ChevronLeft size={20} />
+                                    </button>
+                                    <div>
+                                        <h3 className="text-xl font-black text-text-main">{selectedBundle.curriculum.name}</h3>
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Training Path</p>
+                                    </div>
+                                </header>
 
-                    <div className="space-y-2 text-center">
-                        <h3 className="text-2xl font-black tracking-tight text-text-main">Your Path</h3>
-                        <p className="text-xs font-bold text-text-muted uppercase tracking-[0.2em]">Master Grade 7 English</p>
+                                <PathToMaster
+                                    bundle={selectedBundle}
+                                    onSelectAtom={handleLaunchQuest}
+                                />
+                            </div>
+                        )}
                     </div>
+                )}
 
-                    <div className="relative pb-10">
-                        <PathToMaster
-                            bundle={Grade7EnglishBundle}
-                            onSelectAtom={handleLaunchQuest}
-                        />
+                {/* 2. LIBRARY SECTION */}
+                {section === 'library' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+                        {!selectedBundle ? (
+                            <SubjectMasteryList
+                                bundles={activeBundles}
+                                onSelect={setSelectedBundle}
+                            />
+                        ) : (
+                            <div className="space-y-8">
+                                <header className="flex items-center gap-4">
+                                    <button
+                                        onClick={handleBackToDashboard}
+                                        className="p-3 bg-app-surface border border-app-border rounded-2xl hover:bg-app-bg transition-colors"
+                                    >
+                                        <ChevronLeft size={20} />
+                                    </button>
+                                    <div>
+                                        <h3 className="text-xl font-black text-text-main">{selectedBundle.curriculum.name}</h3>
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Curriculum Library</p>
+                                    </div>
+                                </header>
+
+                                <StudyEraLibrary
+                                    bundle={selectedBundle}
+                                    onSelectAtom={handleLaunchQuest}
+                                />
+                            </div>
+                        )}
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* LIBRARY SECTION: The Structured Syllabus */}
-            {section === 'library' && (
-                <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                    <StudyEraLibrary
-                        bundle={Grade7EnglishBundle}
-                        onSelectAtom={handleLaunchQuest}
-                    />
-                </div>
-            )}
-
-            {/* PROFILE SECTION: Student Sanctuary */}
-            {section === 'profile' && (
-                <HeroProfile />
-            )}
+                {/* 3. PROFILE SECTION */}
+                {section === 'profile' && <HeroProfile />}
+            </div>
         </UniversalNav>
     );
 };

@@ -19,6 +19,8 @@ export interface StudentStats {
     preferredLayout: 'quest' | 'era';
     /** Collection of earned badges */
     achievements?: Achievement[];
+    /** Persisted avatar preference */
+    avatarId?: string;
 }
 
 export interface Achievement {

@@ -3,6 +3,7 @@ import { useAuth } from '@core/auth/AuthContext';
 import { useProgression } from '@core/engine/ProgressionContext';
 import { Sword, Library, User, ShieldCheck } from 'lucide-react';
 import { clsx } from 'clsx';
+import { AVATARS } from '@features/progression/data/avatars';
 
 /**
  * UNIVERSAL NAVIGATION
@@ -18,8 +19,10 @@ interface NavProps {
 }
 
 export const UniversalNav: React.FC<NavProps> = ({ activeSection, setSection, children }) => {
-    const { user, isAdmin } = useAuth();
+    const { isAdmin } = useAuth();
     const { stats } = useProgression();
+
+    const currentAvatar = AVATARS.find(a => a.id === stats.avatarId) || AVATARS[0];
 
     return (
         <div className="min-h-screen bg-app-bg flex flex-col transition-colors duration-500">
@@ -52,7 +55,7 @@ export const UniversalNav: React.FC<NavProps> = ({ activeSection, setSection, ch
                         <div className="p-1 bg-app-surface border border-app-border rounded-full shadow-inner flex items-center">
                             <div className="w-9 h-9 rounded-full bg-app-bg border border-app-border overflow-hidden shadow-sm">
                                 <img
-                                    src={user?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user?.uid}
+                                    src={currentAvatar.url}
                                     alt="Profile"
                                     className="w-full h-full object-cover"
                                 />

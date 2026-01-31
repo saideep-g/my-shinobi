@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useProgression } from '@core/engine/ProgressionContext';
 import { useAuth } from '@core/auth/AuthContext';
+import { useTheme } from '@core/theme/ThemeContext';
 import { BadgeVault } from './BadgeVault';
 import { AVATARS } from '../data/avatars';
-import { LogOut, Settings, Camera, ShieldCheck, Lock } from 'lucide-react';
+import { LogOut, Settings, Camera, ShieldCheck, Lock, Sun, Moon } from 'lucide-react';
 
 /**
  * HERO PROFILE
@@ -12,9 +13,19 @@ import { LogOut, Settings, Camera, ShieldCheck, Lock } from 'lucide-react';
  */
 
 export const HeroProfile: React.FC = () => {
-    const { stats } = useProgression();
+    const { stats, updateStats } = useProgression();
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const [isEditingAvatar, setIsEditingAvatar] = useState(false);
+
+    // Resolve current avatar from selection or default
+    const currentAvatar = AVATARS.find(a => a.id === stats.avatarId) || AVATARS[0];
+
+    const handleSelectAvatar = async (avatarId: string) => {
+        console.log(`[Profile] Persisting avatar selection: ${avatarId}`);
+        await updateStats({ avatarId });
+        setIsEditingAvatar(false);
+    };
 
     return (
         <div className="max-w-2xl mx-auto p-6 pb-24 space-y-10 animate-in fade-in zoom-in-95 duration-700">
@@ -24,8 +35,15 @@ export const HeroProfile: React.FC = () => {
                 {/* Decorative background element */}
                 <div className="absolute -top-10 -left-10 w-40 h-40 bg-app-primary/5 rounded-full blur-3xl" />
 
-                <div className="absolute top-6 right-8">
-                    <button className="p-3 bg-app-bg text-text-muted hover:text-app-primary border border-app-border rounded-2xl transition-all hover:rotate-90">
+                <div className="absolute top-6 right-8 flex gap-3">
+                    <button
+                        onClick={toggleTheme}
+                        className="p-3 bg-app-bg text-text-muted hover:text-app-primary border border-app-border rounded-2xl transition-all shadow-sm active:scale-95"
+                        title="Toggle Light/Dark Theme"
+                    >
+                        {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                    </button>
+                    <button className="p-3 bg-app-bg text-text-muted hover:text-app-primary border border-app-border rounded-2xl transition-all hover:rotate-90 shadow-sm active:scale-95">
                         <Settings size={20} />
                     </button>
                 </div>
@@ -33,7 +51,7 @@ export const HeroProfile: React.FC = () => {
                 <div className="relative inline-block mb-6 group">
                     <div className="w-28 h-28 rounded-[38px] bg-app-bg border-4 border-app-primary flex items-center justify-center overflow-hidden shadow-2xl transition-transform group-hover:scale-105 duration-500">
                         <img
-                            src={user?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user?.uid}
+                            src={currentAvatar.url}
                             alt="Student Avatar"
                             className="w-full h-full object-cover"
                         />
@@ -105,15 +123,17 @@ export const HeroProfile: React.FC = () => {
                             <p className="text-sm text-text-muted font-medium mt-1">Unlock new masks by reaching higher Hero Levels.</p>
                         </header>
 
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-6 mb-10">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-6 mb-10 max-h-[40vh] overflow-y-auto p-2">
                             {AVATARS.map((avatar) => {
                                 const isLocked = stats.heroLevel < avatar.minLevel;
+                                const isSelected = stats.avatarId === avatar.id;
                                 return (
                                     <button
                                         key={avatar.id}
                                         disabled={isLocked}
+                                        onClick={() => handleSelectAvatar(avatar.id)}
                                         className={`group relative aspect-square rounded-[32px] bg-app-bg border-2 flex items-center justify-center transition-all ${!isLocked
-                                                ? 'border-app-border hover:border-app-primary hover:scale-105 hover:shadow-xl'
+                                                ? isSelected ? 'border-app-primary scale-105 shadow-xl shadow-app-primary/20' : 'border-app-border hover:border-app-primary hover:scale-105 hover:shadow-xl'
                                                 : 'opacity-40 cursor-not-allowed bg-app-surface/50 border-app-border/10'
                                             }`}
                                         title={isLocked ? `Required level: ${avatar.minLevel}` : avatar.label}
@@ -128,7 +148,7 @@ export const HeroProfile: React.FC = () => {
                                             alt={avatar.label}
                                             className={`w-14 h-14 object-cover ${isLocked ? 'grayscale' : ''}`}
                                         />
-                                        {!isLocked && (
+                                        {!isLocked && (isSelected || !isLocked) && (
                                             <p className="absolute -bottom-10 left-0 right-0 text-[8px] font-black uppercase text-text-muted opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap overflow-hidden">
                                                 {avatar.label}
                                             </p>
@@ -140,9 +160,9 @@ export const HeroProfile: React.FC = () => {
 
                         <button
                             onClick={() => setIsEditingAvatar(false)}
-                            className="w-full py-6 bg-app-primary text-white rounded-[24px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-app-primary/30"
+                            className="w-full py-6 text-text-muted font-black uppercase tracking-widest hover:text-text-main transition-all"
                         >
-                            Confirm Selection
+                            Cancel
                         </button>
                     </div>
                 </div>

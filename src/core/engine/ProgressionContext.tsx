@@ -17,6 +17,7 @@ interface ProgressionContextType {
     addXP: (amount: number) => Promise<void>;
     updateStreak: () => Promise<void>;
     checkForAchievements: () => Promise<Achievement[]>;
+    updateStats: (updates: Partial<StudentStats>) => Promise<void>;
     isLoaded: boolean;
 }
 
@@ -141,8 +142,19 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         return [];
     };
 
+    /**
+     * Updates arbitrary fields in the student stats object.
+     * Useful for persisting avatars, layout preferences, etc.
+     */
+    const updateStats = async (updates: Partial<StudentStats>) => {
+        if (!user) return;
+        const updatedStats = { ...stats, ...updates };
+        setStats(updatedStats);
+        await dbAdapter.put('stats', { ...updatedStats, id: user.uid });
+    };
+
     return (
-        <ProgressionContext.Provider value={{ stats, addXP, updateStreak, checkForAchievements, isLoaded }}>
+        <ProgressionContext.Provider value={{ stats, addXP, updateStreak, checkForAchievements, updateStats, isLoaded }}>
             {children}
         </ProgressionContext.Provider>
     );
