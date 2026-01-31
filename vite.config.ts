@@ -15,4 +15,16 @@ export default defineConfig({
       '@layouts': path.resolve(__dirname, './src/layouts'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['lucide-react', 'clsx', 'tailwind-merge'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600, // Slightly increase limit as our core vendors are heavy
+  },
 });
