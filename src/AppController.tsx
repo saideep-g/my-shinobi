@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { UniversalNav } from './shared/layouts/UniversalNav';
 import { DailyMissionCard } from '@features/progression/components/DailyMissionCard';
 import { PathToMaster } from '@features/progression/components/PathToMaster';
@@ -16,12 +17,41 @@ import { ChevronLeft } from 'lucide-react';
 /**
  * APP CONTROLLER
  * Orchestrates the multi-subject dashboard and view switching.
+ * Syncs the internal 'section' state with the Browser URL.
  */
 
+type Section = 'quest' | 'library' | 'profile' | 'history';
+
 export const AppController: React.FC = () => {
-    const [section, setSection] = useState<'quest' | 'library' | 'profile' | 'history'>('quest');
-    const [selectedBundle, setSelectedBundle] = useState<SubjectBundle | null>(null);
+    const location = useLocation();
+    const navigate = useNavigate();
     const { startSession } = useSession();
+
+    // Map path to internal section state
+    const getSectionFromPath = (path: string): Section => {
+        if (path.includes('/library')) return 'library';
+        if (path.includes('/profile')) return 'profile';
+        if (path.includes('/history')) return 'history';
+        return 'quest'; // Default /dashboard to quest
+    };
+
+    const [section, setSectionState] = useState<Section>(getSectionFromPath(location.pathname));
+    const [selectedBundle, setSelectedBundle] = useState<SubjectBundle | null>(null);
+
+    // Sync state when URL changes (e.g., user hits back button)
+    useEffect(() => {
+        const newSection = getSectionFromPath(location.pathname);
+        if (newSection !== section) {
+            setSectionState(newSection);
+        }
+    }, [location.pathname]);
+
+    const setSection = (s: Section) => {
+        setSectionState(s);
+        // Map back to the canonical URL
+        const path = s === 'quest' ? '/dashboard' : `/${s}`;
+        navigate(path);
+    };
 
     // Active Subjects
     const activeBundles = [Grade7EnglishBundle, Grade7MathBundle];
@@ -38,7 +68,7 @@ export const AppController: React.FC = () => {
         <UniversalNav
             activeSection={section === 'history' ? 'profile' : section}
             setSection={(s) => {
-                setSection(s);
+                setSection(s as Section);
                 // Auto-reset selection when switching main sections
                 if (s === 'profile') setSelectedBundle(null);
             }}

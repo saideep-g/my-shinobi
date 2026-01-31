@@ -7,8 +7,6 @@ import { RoleGuard } from '@core/auth/RoleGuard';
 import { StudentShellSelector } from '@layouts/StudentShellSelector';
 import { useTheme } from '@core/theme/ThemeContext';
 
-
-
 const LoginPage = () => {
     const { theme, toggleTheme } = useTheme();
     const { signInWithGoogle } = useAuth();
@@ -79,18 +77,21 @@ export default function App() {
                                             <Route path="/login" element={<LoginPage />} />
 
                                             {/* Student Protected Routes (Wrapped in Shell Selector) */}
-                                            <Route
-                                                path="/dashboard"
-                                                element={
-                                                    <ProtectedRoute>
-                                                        <RoleGuard allowedRoles={['STUDENT', 'ADMIN']}>
-                                                            <StudentShellSelector>
-                                                                <AppController />
-                                                            </StudentShellSelector>
-                                                        </RoleGuard>
-                                                    </ProtectedRoute>
-                                                }
-                                            />
+                                            {['/dashboard', '/library', '/profile', '/history'].map(path => (
+                                                <Route
+                                                    key={path}
+                                                    path={path}
+                                                    element={
+                                                        <ProtectedRoute>
+                                                            <RoleGuard allowedRoles={['STUDENT', 'ADMIN']}>
+                                                                <StudentShellSelector>
+                                                                    <AppController />
+                                                                </StudentShellSelector>
+                                                            </RoleGuard>
+                                                        </ProtectedRoute>
+                                                    }
+                                                />
+                                            ))}
 
                                             {/* Admin Only Routes */}
                                             <Route
