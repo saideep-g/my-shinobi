@@ -189,9 +189,29 @@ src/
 
 ---
 
-## 🏗️ Sprint 5: Admin Intelligence & DevOps (Planned)
-*   **Phase 41: Coverage Radar**: An admin-only tool to identify gaps in the question library based on curriculum definitions.
-*   **Phase 42: Student Voice Feed**: A real-time tracker for the most common misconceptions across the student body.
-*   **Phase 43: Warp Service**: Tools for QA to "warp" to specific states or inject Bayesian data for testing.
-*   **Phase 44: CI/CD Pipeline**: Automated Playwright E2E tests for the "Robot Student" to verify mastery calculations.
-*   **Phase 50: Final Migration**: Transitioning permanent data from the Blue Ninja legacy platform.
+---
+
+## 🏗️ Sprint 5: Admin Intelligence & DevOps (Completed)
+Sprint 5 focused on bulletproofing the platform through advanced routing, automated testing, and administrative speed-controls.
+
+### 🛣️ Production-Grade Routing
+*   **Deep-Linking Architecture**: Migrated to **React Router v6**, providing every subject, quest, and profile with a unique, bookmarkable URL.
+*   **Domain Separation**: Enforced rigorous logic separation between the **Student Domain** (`/quest`, `/library`) and the **Admin Domain** (`/admin`).
+*   **State-URL Sync**: Linked the internal application state to the browser history, enabling perfect "Back/Forward" navigation without data loss.
+
+### 🤖 Testing & Simulation Shield
+*   **Bayesian Unit Tests**: Integrated **Vitest** to mathematically verify the BKT engine. We now "proof" that mastery math correctly identifies lucky guesses and silly slips.
+*   **The Robot Student (E2E)**: Implemented **Playwright** simulations. An automated robot now "plays" the app, logging in and completing quests to verify that every component and database interaction works in sync.
+*   **Pre-Flight Automation**: Created the `ship-it` orchestrator. A single command (`npm run ship-it`) that runs unit tests, E2E simulations, and builds the production bundle, ensuring zero-defect deployments.
+
+### 🛠️ Admin "Speed Run" Controls
+*   **System Guards**: A new administrative interface for real-time user constraint management.
+*   **Developer Speed Run**: A toggle to truncate sessions (3 questions vs 20), allowing for 5-second verification of Bayesian updates and XP gains.
+*   **Data Migration Utility**: A specialized script to bridge years of legacy progress from the "Blue Ninja" platform into the new high-fidelity Bayesian map.
+
+---
+
+## 🚀 Sprint 6: Vertical Content & Final Polish (Planned)
+*   **Syllabus Expansion**: Fully populating the "Math Grade 7" and "Science Grade 7" bundles with AI-generated, human-verified questions.
+*   **Advanced Remediation**: Implementing branching remedial videos for atoms where the knowledge signal remains low after 3 sessions.
+*   **Performance 2.0**: Migrating from IndexedDB to a persistent Service Worker for true "Instant-On" capabilities.
