@@ -9,6 +9,7 @@ export const EnglishGrade7: Subject = {
         {
             id: 'tenses-01',
             title: 'Mastering Tenses',
+            order: 1,
             atoms: [
                 {
                     id: 'present-simple-01',
