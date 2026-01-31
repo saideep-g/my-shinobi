@@ -11,7 +11,7 @@ import { QuestionBase } from '@/types/questions';
 // We assume a standard file structure for lazy loading:
 // @features/questions/types/[templateId]/v[version]/Component.tsx
 const loadComponent = (templateId: string, version: number) => {
-    return lazy(() => import(`../templates/${templateId}/v${version}/Component.tsx`));
+    return lazy(() => import(`../types/${templateId}/v${version}/Component.tsx`));
 };
 
 interface RendererProps {
