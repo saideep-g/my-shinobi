@@ -13,7 +13,7 @@ import { AssessmentSession } from '@/types/assessment';
  * Visualizes XP Gained, Accuracy, and Mastery Growth.
  */
 
-export const QuestSummary: React.FC = () => {
+export const QuestSummary: React.FC<{ onAction?: () => void }> = ({ onAction }) => {
     const { activeBundle, isSessionComplete, activeSessionId } = useSession();
     const { width, height } = useWindowSize();
     const [sessionData, setSessionData] = useState<AssessmentSession | null>(null);
@@ -117,9 +117,8 @@ export const QuestSummary: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Action Button */}
                 <button
-                    onClick={() => window.location.reload()} // Navigation back to map
+                    onClick={() => onAction ? onAction() : window.location.reload()}
                     className="mt-auto w-full py-6 bg-app-primary text-white rounded-[28px] font-black text-xl shadow-2xl shadow-app-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group"
                 >
                     RETURN TO WAYPOINT

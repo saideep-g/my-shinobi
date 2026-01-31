@@ -18,6 +18,8 @@ export interface QuestionBase {
     version: number;
     /** Subject-specific context (e.g., 'Tenses', 'Algebra') */
     tags: string[];
+    /** Template-specific payload (options, correct answer, etc) */
+    data: any;
 }
 
 export interface QuestionManifest {

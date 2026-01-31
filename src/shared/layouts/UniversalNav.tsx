@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '@core/auth/AuthContext';
 import { useProgression } from '@core/engine/ProgressionContext';
 import { Sword, Library, User, ShieldCheck } from 'lucide-react';
@@ -6,19 +7,13 @@ import { clsx } from 'clsx';
 import { AVATARS } from '@features/progression/data/avatars';
 
 /**
- * UNIVERSAL NAVIGATION
+ * UNIVERSAL NAVIGATION (Router Version)
  * The high-level wrapper that manages the primary app sections.
- * * Handles the transition between Quest (Game) and Library (Study).
- * * Provides an entry point for Admin tools if the user is authorized.
+ * * Uses React Router's Outlet to render nested content.
+ * * Implements active-link highlighting using NavLink.
  */
 
-interface NavProps {
-    activeSection: 'quest' | 'library' | 'profile';
-    setSection: (section: 'quest' | 'library' | 'profile') => void;
-    children: React.ReactNode;
-}
-
-export const UniversalNav: React.FC<NavProps> = ({ activeSection, setSection, children }) => {
+export const UniversalNav: React.FC = () => {
     const { isAdmin } = useAuth();
     const { stats } = useProgression();
 
@@ -43,13 +38,13 @@ export const UniversalNav: React.FC<NavProps> = ({ activeSection, setSection, ch
 
                     <div className="flex items-center gap-4">
                         {isAdmin && (
-                            <a
-                                href="/admin"
+                            <NavLink
+                                to="/admin"
                                 className="p-3 text-app-primary hover:bg-app-primary/10 rounded-2xl transition-all group"
                                 title="Open Admin Workbench"
                             >
                                 <ShieldCheck size={22} className="group-hover:scale-110 transition-transform" />
-                            </a>
+                            </NavLink>
                         )}
 
                         <div className="p-1 bg-app-surface border border-app-border rounded-full shadow-inner flex items-center">
@@ -65,56 +60,38 @@ export const UniversalNav: React.FC<NavProps> = ({ activeSection, setSection, ch
                 </div>
             </header>
 
-            {/* Main Content Area */}
+            {/* Main Content Area: Routed via Outlet */}
             <main className="flex-1 pb-28 md:pb-0">
                 <div className="max-w-6xl mx-auto w-full">
-                    {children}
+                    <Outlet />
                 </div>
             </main>
 
             {/* Bottom Navigation (Mobile-First) */}
             <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md bg-app-surface/90 backdrop-blur-2xl border border-white/10 p-2 rounded-[32px] shadow-2xl shadow-black/20 md:bottom-8">
                 <div className="flex justify-around items-center">
-                    <NavButton
-                        active={activeSection === 'quest'}
-                        onClick={() => setSection('quest')}
-                        icon={<Sword size={22} />}
-                        label="Quest"
-                    />
-                    <NavButton
-                        active={activeSection === 'library'}
-                        onClick={() => setSection('library')}
-                        icon={<Library size={22} />}
-                        label="Library"
-                    />
-                    <NavButton
-                        active={activeSection === 'profile'}
-                        onClick={() => setSection('profile')}
-                        icon={<User size={22} />}
-                        label="Profile"
-                    />
+                    <NavItem to="/quest" icon={<Sword size={22} />} label="Quest" />
+                    <NavItem to="/library" icon={<Library size={22} />} label="Library" />
+                    <NavItem to="/profile" icon={<User size={22} />} label="Profile" />
                 </div>
             </nav>
         </div>
     );
 };
 
-const NavButton = ({ active, onClick, icon, label }: any) => (
-    <button
-        onClick={onClick}
-        className={clsx(
+const NavItem = ({ to, icon, label }: { to: string, icon: React.ReactNode, label: string }) => (
+    <NavLink
+        to={to}
+        className={({ isActive }) => clsx(
             "flex flex-col items-center gap-1.5 px-6 py-3 rounded-[24px] transition-all duration-300 group",
-            active
-                ? "text-app-primary bg-app-primary/10 shadow-inner"
+            isActive
+                ? "text-app-primary bg-app-primary/10 shadow-inner scale-105"
                 : "text-text-muted hover:text-text-main hover:bg-app-bg"
         )}
     >
-        <div className={clsx(
-            "transition-transform",
-            active ? "scale-110" : "group-hover:scale-110"
-        )}>
+        <div className="transition-transform group-hover:scale-110">
             {icon}
         </div>
         <span className="text-[9px] font-black uppercase tracking-[0.2em]">{label}</span>
-    </button>
+    </NavLink>
 );
