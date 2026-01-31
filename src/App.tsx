@@ -7,35 +7,7 @@ import { RoleGuard } from '@core/auth/RoleGuard';
 import { StudentShellSelector } from '@layouts/StudentShellSelector';
 import { useTheme } from '@core/theme/ThemeContext';
 
-// Placeholder components for the new structure
-const AdminDashboard = () => (
-    <div className="p-12 text-center">
-        <div className="text-xl font-black uppercase text-rose-500 tracking-widest bg-rose-500/10 py-2 px-6 rounded-full inline-block mb-4">
-            Admin Workbench (Secret)
-        </div>
-        <p className="text-text-muted">Master ninja command center.</p>
-    </div>
-);
 
-const StudentDashboard = () => (
-    <div className="space-y-6">
-        <div className="bg-app-surface p-8 rounded-3xl border border-app-border shadow-xl">
-            <h2 className="text-2xl font-bold mb-2">Welcome, Shinobi</h2>
-            <p className="text-text-muted">Your learning journey continues here.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-app-primary/10 p-6 rounded-2xl border border-app-primary/20">
-                <h3 className="font-bold text-app-primary mb-2">Daily Quest</h3>
-                <p className="text-sm text-text-main">Master 5 Present Simple atoms today.</p>
-            </div>
-            <div className="bg-app-secondary/10 p-6 rounded-2xl border border-app-secondary/20">
-                <h3 className="font-bold text-app-secondary mb-2">Skill Progress</h3>
-                <p className="text-sm text-text-main">English Grade 7: 45% Completed</p>
-            </div>
-        </div>
-    </div>
-);
 
 const LoginPage = () => {
     const { theme, toggleTheme } = useTheme();
@@ -88,6 +60,8 @@ import { IntelligenceProvider } from '@core/engine/IntelligenceContext';
 import { SessionProvider } from '@core/engine/SessionContext';
 import { ProgressionProvider } from '@core/engine/ProgressionContext';
 import { MissionProvider } from '@features/progression/context/MissionContext';
+import { AppController } from './AppController';
+import { ContentWorkbench } from '@features/admin/components/ContentWorkbench';
 
 export default function App() {
     return (
@@ -109,14 +83,12 @@ export default function App() {
                                                 <ProtectedRoute>
                                                     <RoleGuard allowedRoles={['STUDENT', 'ADMIN']}>
                                                         <StudentShellSelector>
-                                                            <StudentDashboard />
+                                                            <AppController />
                                                         </StudentShellSelector>
                                                     </RoleGuard>
                                                 </ProtectedRoute>
                                             }
                                         />
-
-                                        {/* Other student routes will go here as well, also wrapped in StudentShellSelector */}
 
                                         {/* Admin Only Routes */}
                                         <Route
@@ -124,7 +96,7 @@ export default function App() {
                                             element={
                                                 <ProtectedRoute>
                                                     <RoleGuard allowedRoles={['ADMIN']} redirectTo="/dashboard">
-                                                        <AdminDashboard />
+                                                        <ContentWorkbench />
                                                     </RoleGuard>
                                                 </ProtectedRoute>
                                             }

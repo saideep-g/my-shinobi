@@ -22,6 +22,8 @@ interface AuthContextType {
     logout: () => Promise<void>;
     // Utility function to sign in with Google
     signInWithGoogle: () => Promise<void>;
+    // Boolean helper to check for admin privileges
+    isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -100,7 +102,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, profile, loading, logout, signInWithGoogle }}>
+        <AuthContext.Provider value={{
+            user,
+            profile,
+            loading,
+            logout,
+            signInWithGoogle,
+            isAdmin: profile?.role === 'ADMIN'
+        }}>
             {children}
         </AuthContext.Provider>
     );
