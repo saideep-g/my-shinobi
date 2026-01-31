@@ -41,6 +41,7 @@ export const LoginPage: React.FC = () => {
                 <button
                     onClick={handleLogin}
                     disabled={isLoggingIn}
+                    data-testid="login-button"
                     className={`w-full py-5 bg-app-primary text-white rounded-[20px] font-black uppercase tracking-widest shadow-xl shadow-app-primary/30 transition-all active:scale-95 ${isLoggingIn ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-app-primary/40 hover:-translate-y-1'}`}
                 >
                     {isLoggingIn ? 'Connecting...' : 'Unlock with Google'}

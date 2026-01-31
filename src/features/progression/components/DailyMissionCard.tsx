@@ -46,7 +46,7 @@ export const DailyMissionCard: React.FC = () => {
                         <div className="p-1 bg-app-primary/10 rounded-md">
                             <Target size={14} className="text-app-primary" />
                         </div>
-                        Daily Quest
+                        Daily Mission
                     </span>
                     <span className="text-text-muted font-mono">{progress.count} / {progress.goal} Questions</span>
                 </div>

@@ -30,6 +30,7 @@ export const PathNode: React.FC<PathNodeProps> = ({
             <button
                 onClick={isUnlocked ? onClick : undefined}
                 disabled={!isUnlocked}
+                data-testid="start-quest-btn"
                 className={clsx(
                     "w-24 h-24 rounded-[32px] flex items-center justify-center transition-all duration-500 relative shadow-xl border-4",
                     !isUnlocked && "bg-app-bg border-app-border text-text-muted cursor-not-allowed opacity-60",

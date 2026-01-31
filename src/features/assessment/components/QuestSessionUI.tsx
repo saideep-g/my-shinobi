@@ -17,6 +17,8 @@ export const QuestSessionUI: React.FC = () => {
     const { subjectId } = useParams<{ subjectId: string }>();
     const navigate = useNavigate();
     const [reviewFinished, setReviewFinished] = useState(false);
+    const [hasSubmitted, setHasSubmitted] = useState(false);
+    const [lastResult, setLastResult] = useState<{ isCorrect: boolean, duration: number } | null>(null);
 
     const {
         startSession,
@@ -35,14 +37,28 @@ export const QuestSessionUI: React.FC = () => {
                 if (activeBundle?.id !== bundle.id || isSessionComplete) {
                     startSession(bundle);
                     setReviewFinished(false);
+                    setHasSubmitted(false);
                 }
             } else {
                 navigate('/quest');
             }
         }
-    }, [subjectId, startSession, navigate]);
+    }, [subjectId, startSession, navigate, activeBundle?.id, isSessionComplete]);
 
     const handleExit = () => navigate('/quest');
+
+    const handleOnAnswer = (isCorrect: boolean, duration: number) => {
+        setLastResult({ isCorrect, duration });
+        setHasSubmitted(true);
+    };
+
+    const handleNext = async () => {
+        if (lastResult) {
+            await submitResponse(lastResult.isCorrect, lastResult.duration);
+            setHasSubmitted(false);
+            setLastResult(null);
+        }
+    };
 
     // 2. Flow Control: Completion -> Review -> Summary
     if (isSessionComplete) {
@@ -84,15 +100,33 @@ export const QuestSessionUI: React.FC = () => {
             </header>
 
             {/* Questions Container */}
-            <main className="flex-1 overflow-y-auto p-4 md:p-10">
+            <main className="flex-1 overflow-y-auto p-4 md:p-10 pb-32">
                 <div className="max-w-2xl mx-auto">
                     <QuestionRenderer
+                        key={currentQuestion.id}
                         question={currentQuestion}
                         data={currentQuestion.data}
-                        onAnswer={(ans, dur) => submitResponse(ans.isCorrect, dur)}
+                        onAnswer={(ans, dur) => handleOnAnswer(ans.isCorrect, dur)}
                     />
                 </div>
             </main>
+
+            {/* Sticky Next Button (Footer) */}
+            {hasSubmitted && (
+                <footer className="fixed bottom-0 left-0 right-0 p-6 bg-app-surface border-t border-app-border animate-in slide-in-from-bottom duration-300">
+                    <div className="max-w-2xl mx-auto">
+                        <button
+                            onClick={handleNext}
+                            className="w-full py-5 bg-app-primary text-white rounded-[24px] font-black uppercase tracking-widest shadow-xl shadow-app-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                        >
+                            Continue to Next Challenge
+                            <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                                <span className="text-xs font-black">→</span>
+                            </div>
+                        </button>
+                    </div>
+                </footer>
+            )}
         </div>
     );
 };

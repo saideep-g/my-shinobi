@@ -27,4 +27,10 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 600, // Slightly increase limit as our core vendors are heavy
   },
+  // @ts-ignore - Vitest types
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    exclude: ['node_modules', 'e2e/**'],
+  },
 });

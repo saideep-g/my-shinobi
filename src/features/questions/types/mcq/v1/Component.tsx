@@ -28,11 +28,13 @@ export default function MCQComponent({ data, onAnswer, isReviewMode }: MCQProps)
     const handleSelect = (option: string) => {
         if (hasSubmitted || isReviewMode) return;
         setSelected(option);
+    };
 
-        // Auto-submit on selection for a faster mobile "Quest" experience
+    const handleSubmit = () => {
+        if (!selected) return;
         submitAnswer({
-            value: option,
-            isCorrect: option === data.correctAnswer
+            value: selected,
+            isCorrect: selected === data.correctAnswer
         });
     };
 
@@ -40,6 +42,16 @@ export default function MCQComponent({ data, onAnswer, isReviewMode }: MCQProps)
         <BaseTemplateWrapper
             title={data.subject || "Multiple Choice"}
             stem={data.text}
+            footer={
+                !hasSubmitted && !isReviewMode && selected && (
+                    <button
+                        onClick={handleSubmit}
+                        className="w-full py-4 bg-app-primary text-white rounded-[20px] font-black uppercase tracking-widest shadow-xl shadow-app-primary/30 animate-in slide-in-from-bottom-2 duration-300"
+                    >
+                        Submit Answer
+                    </button>
+                )
+            }
         >
             <div className="grid grid-cols-1 gap-3">
                 {data.options.map((option, i) => {
@@ -52,8 +64,9 @@ export default function MCQComponent({ data, onAnswer, isReviewMode }: MCQProps)
                             onClick={() => handleSelect(option)}
                             disabled={hasSubmitted || isReviewMode}
                             className={clsx(
-                                "w-full p-5 text-left rounded-2xl border-2 transition-all duration-200 font-medium active:scale-[0.98]",
-                                !hasSubmitted && "border-app-border hover:border-app-primary hover:bg-app-primary/5 bg-app-surface",
+                                "question-option w-full p-5 text-left rounded-2xl border-2 transition-all duration-200 font-medium active:scale-[0.98]",
+                                !hasSubmitted && !isSelected && "border-app-border hover:border-app-primary hover:bg-app-primary/5 bg-app-surface",
+                                !hasSubmitted && isSelected && "border-app-primary bg-app-primary/10 text-app-primary ring-2 ring-app-primary/20",
                                 hasSubmitted && isCorrect && "border-app-accent bg-app-accent/10 text-app-accent",
                                 hasSubmitted && isSelected && !isCorrect && "border-rose-500 bg-rose-50 text-rose-600",
                                 hasSubmitted && !isSelected && !isCorrect && "opacity-50 border-app-border"

@@ -4,6 +4,7 @@ import { SubjectBundle } from '@/types/bundles';
 
 export const BUNDLE_REGISTRY: Record<string, SubjectBundle> = {
     'grade-7-english': Grade7EnglishBundle,
+    'english-g7': Grade7EnglishBundle,
     'grade-7-math': Grade7MathBundle
 };
 
