@@ -15,13 +15,27 @@ This sprint established the bedrock of the application, focusing on scalability,
     *   **Study Era**: A desktop-optimized, sidebar-driven workspace.
 *   **Strict Security**: **Role-Based Access Control (RBAC)** ensures rigorous separation between Student and Admin areas.
 
-### 🛠️ Tech Stack & Features
-*   **Framework**: React (Vite) + TypeScript
-*   **Styling**: Tailwind CSS + CSS Variables (Deep Dark Mode support)
-*   **State/Auth**: Firebase Auth + Context API (Clean Auth Hooks)
-*   **Database**:
-    *   **Local**: IDB (IndexedDB Wrapper)
-    *   **Cloud**: Firebase Firestore (with Security Rules)
+---
+
+## ⚔️ Sprint 2: The Question & Ingestion Engines (Completed)
+Sprint 2 transformed the foundation into a specialized learning machine, focusing on content delivery and interactive pedagogies.
+
+### 🧠 Intelligence & Ingestion
+*   **Hashing Defense**: Implemented a `hashingService` (SHA-256) to fingerprint questions, preventing redundant AI-generated content.
+*   **Duplicate Gatekeeper**: A `gatekeeperService` enforces library integrity at the point of ingestion.
+*   **The "Lens" Engine**: A data-transformation layer that migrates legacy question schemas to newer versions on-the-fly, preventing UI crashes during schema evolution.
+
+### 🎭 Interaction Arsenal
+Implemented a **Versioned Template Registry** supporting 7+ interaction types:
+*   **Universal**: MCQ (v1) and Numeric Input (v1) with tolerance logic.
+*   **Advanced**: Two-Tier Reasoning (Pedagogical analysis) and Adaptive Branching (Remedial loops).
+*   **Tactile**: Sorting (Reordering), Matching (Pairing), and Number Lines (Spatial calibration).
+*   **Performance**: All interaction templates are **Lazy-Loaded**, maintaining a lightweight initial bundle.
+
+### 🔊 Media & English Infrastructure
+*   **Media Service**: Centralized asset resolution for local and remote (CDN) storage.
+*   **Audio Mastery**: Implemented a robust `AudioPlayer` and `useAudioPlayer` hook for English listening exercises.
+*   **Themed Visuals**: `ThemedIcon` components ensure SVGs respond dynamically to light/dark mode.
 
 ---
 
@@ -31,19 +45,13 @@ The project follows a Domain-Driven Design (DDD) inspired structure:
 ```
 src/
 ├── core/               # Foundational services (Auth, Database, Theme)
-│   ├── auth/           # AuthContext, RoleGuard, ProtectedRoute
-│   ├── database/       # Firebase init, IDB Adapter
-│   └── theme/          # ThemeProvider, Design Tokens
-├── features/           # Feature-specific logic (Curriculum, Admin)
-│   └── curriculum/     # Bundle seeds (e.g., English Grade 7)
-├── layouts/            # The "Shell" System
-│   ├── registry.ts     # Layout definitions
-│   ├── QuestLayout.tsx # Mobile-first shell
-│   └── EraLayout.tsx   # Desktop-first shell
-├── services/           # Business logic & API bridges
-│   ├── db/             # Firestore helpers
-│   └── curriculum/     # bundleService (The Optimization Engine)
-└── types/              # Single Source of Truth (Schemas)
+├── features/           # Feature-specific logic
+│   ├── admin/          # Bundle Management & Ingestion
+│   ├── curriculum/     # Grade-based content skeletons (e.g., Grade 7 English)
+│   └── questions/      # THE ENGINE (Registry, Renderer, Types, Transforms)
+├── shared/             # Reusable UI components & hooks (Media, Layouts)
+├── services/           # Business logic & Domain services (Validation, Sync)
+└── types/              # Single Source of TruthSchemas)
 ```
 
 ---
@@ -70,6 +78,7 @@ VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
+VITE_ASSET_BASE_URL=
 ```
 
 ### 4. Firestore Security Rules
@@ -86,32 +95,18 @@ service cloud.firestore {
 }
 ```
 
-### 5. Run Local Server
-```bash
-npm run dev
-```
-
 ---
 
 ## 🛡️ Key Patterns Implemented
 
-### The "Clean Auth" Hook
-We access user identity without prop drilling:
+### The "Lens" Pattern
+We solve schema drift by "lensing" data to the correct version before it hits the UI:
 ```typescript
-const { user, profile, loading } = useAuth();
+const lensedData = lensEngine.applyLens(questionMetadata, rawData, 2);
 ```
 
-### The Bundle Master Optimization
-Instead of:
-> App -> Fetch Big 2MB Bundle (Every Login) ❌ 💸
-
-We do:
-> App -> Check Tiny 1KB Master Index ✅
-> If Changed -> Fetch Bundle & Cache to IndexedDB 📥
-> If Same -> Load from Device (0ms, $0) ⚡
-
 ### The Shell System
-We wrap the app dynamically based on the student's `preferredLayout`:
+Adaptive UI based on the student's `preferredLayout`:
 ```tsx
 <StudentShellSelector>
    <Dashboard />
@@ -120,7 +115,8 @@ We wrap the app dynamically based on the student's `preferredLayout`:
 
 ---
 
-## 🔜 Next Steps: Sprint 2
-*   **Gamification Engine**: Implementing XP, Levels, and Streaks.
-*   **Assessment System**: Building the Quiz Runner and Result Processing.
-*   **Dashboard Features**: Connecting real data to the specialized shells.
+## 🔜 Next Steps: Sprint 3
+*   **Gamification Engine**: Implementing XP, Levels, and Streaks based on quiz performance.
+*   **Intelligence Radar**: Building the mastery tracking system for curriculum atoms.
+*   **Assessment System**: Finalizing the "Run Quest" experience with full result processing.
+*   **Bayesian Mastery**: Integrating extra data from Two-Tier and Branching templates into the learning model.

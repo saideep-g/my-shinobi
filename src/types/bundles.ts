@@ -8,12 +8,20 @@ import { QuestionBase } from './questions';
  */
 export interface SubjectBundle {
     id: string; // e.g., 'eng-7-tenses'
-    version: string; // e.g., '1.0.0'
-    lastUpdated: number; // Timestamp matching Master entry
+    grade?: number;
+    subjectId?: string;
+    version: string;
+    lastUpdated: number;
 
     // The Curriculum Structure (Chapters, Atoms)
-    subject: Subject;
+    curriculum: Subject;
 
     // The Raw Question Bank associated with this subject
     questions: QuestionBase[];
+
+    stats?: {
+        totalAtoms: number;
+        totalQuestions: number;
+        supportedTemplates: string[];
+    };
 }
