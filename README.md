@@ -115,8 +115,52 @@ Adaptive UI based on the student's `preferredLayout`:
 
 ---
 
-## 🔜 Next Steps: Sprint 3
-*   **Gamification Engine**: Implementing XP, Levels, and Streaks based on quiz performance.
-*   **Intelligence Radar**: Building the mastery tracking system for curriculum atoms.
-*   **Assessment System**: Finalizing the "Run Quest" experience with full result processing.
-*   **Bayesian Mastery**: Integrating extra data from Two-Tier and Branching templates into the learning model.
+---
+
+## 🧠 Sprint 3: The Intelligence & Progression Engine (Completed)
+Sprint 3 delivered the "Brain" of My-Shinobi, connecting interactive content with deep pedagogical modeling and gamified motivation.
+
+### 🔬 The Bayesian "Brain"
+*   **BKT Engine**: Implemented **Bayesian Knowledge Tracing** to calculate mastery probabilities. Every answer given by the student (including guesses and slips) updates their global mastery map in real-time.
+*   **Selection Orchestrator**: A "Traffic Controller" engine that selects the next optimal question based on prerequisite mastery ($> 0.85$), targeting weak points, and enforcing spaced repetition.
+*   **Intelligence Radar**: A granular heat-map dashboard that translates complex Bayesian probabilities into "Signal Strength" indicators for every curriculum Atom.
+
+### 🛡️ Reliability & Sync
+*   **Write-Through Buffer**: Implemented a resilience layer in **IndexedDB**. Every student response, duration, and mastery shift is logged immediately to disk, surviving browser crashes or battery failure.
+*   **Atomic Cloud Sync**: A background service that uses **Firestore Transactions** to push local activity logs, student stats, and mastery updates to the cloud in a single, all-or-nothing batch.
+
+### 🎮 Progression & Gamification
+*   **Hero Levels & XP**: A non-linear progression system that awards **Power Points (PP)**. Calculated using a square-root curve to ensure early levels feel fast and rewarding.
+*   **Achievement Engine**: A central **Badge Registry** that monitors student state to unlock rewards like "Tense Master" or "7-Day Streak Warrior."
+*   **Path to Master**: A game-like curriculum map that visualizes the student's journey, showing "Locked" prerequisites and "Golden" mastered nodes.
+
+### 🛠️ The Admin Workbench
+*   **Content Workbench**: A command center for managing the English Grade 7 bundle.
+*   **Atomic Publisher**: An administrative tool that handles **Semantic Versioning** and pushes curriculum updates to production using concurrent transactions, ensuring zero-downtime updates for students.
+
+---
+
+## 📂 Project Structure
+The project follows a Domain-Driven Design (DDD) inspired structure:
+
+```
+src/
+├── core/               # Foundational services (Auth, Database Engine, Bayesian)
+├── features/           # Feature-specific logic
+│   ├── admin/          # Workbench & Bundle Publishing
+│   ├── assessment/     # Mastery Radar & Logic
+│   ├── curriculum/     # Grade-based content skeletons
+│   ├── progression/    # Hero levels, Achievements, Path Map
+│   └── questions/      # THE ENGINE (Registry, Renderer, Types)
+├── shared/             # Reusable UI (Media, Layouts, Progression cards)
+├── services/           # Business logic (Sync, Validation)
+└── types/              # Single Source of Truth
+```
+
+---
+
+## 🔜 Next Steps: Sprint 4
+*   **Social Domain**: Implementing Leaderboards and Peer Groups for collaborative learning.
+*   **AI Tutoring Layer**: Integrating LLM-based feedback for missed questions.
+*   **Global Search**: Unified search across the curriculum and library.
+*   **Diagnostic Assessments**: Adaptive testing to "baseline" new students.
