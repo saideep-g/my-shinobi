@@ -10,7 +10,7 @@ import { StudentStats, MasteryMap } from '@/types/progression';
  */
 
 const DB_NAME = 'my_shinobi_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export interface ShinobiDB {
     subjects: Subject;
@@ -22,7 +22,7 @@ export interface ShinobiDB {
 
 export const initDB = async (): Promise<IDBPDatabase<ShinobiDB>> => {
     return openDB<ShinobiDB>(DB_NAME, DB_VERSION, {
-        upgrade(db) {
+        upgrade(db, oldVersion, _newVersion, transaction) {
             // 1. Curriculum Store
             if (!db.objectStoreNames.contains('subjects')) {
                 db.createObjectStore('subjects', { keyPath: 'id' });
@@ -31,20 +31,26 @@ export const initDB = async (): Promise<IDBPDatabase<ShinobiDB>> => {
             // 2. Question Library Store
             if (!db.objectStoreNames.contains('questions')) {
                 const qStore = db.createObjectStore('questions', { keyPath: 'id' });
-                // Index by contentHash for duplicate checking
                 qStore.createIndex('by-hash', 'contentHash', { unique: true });
-                // Index by atom for quick quiz generation
                 qStore.createIndex('by-atom', 'atomId');
+            } else if (oldVersion < 2) {
+                const qStore = transaction.objectStore('questions');
+                if (!qStore.indexNames.contains('by-hash')) qStore.createIndex('by-hash', 'contentHash', { unique: true });
+                if (!qStore.indexNames.contains('by-atom')) qStore.createIndex('by-atom', 'atomId');
             }
 
-            // 3. Assessment Sessions (The Write-Through Buffer)
+            // 3. Assessment Sessions
             if (!db.objectStoreNames.contains('sessions')) {
                 const sStore = db.createObjectStore('sessions', { keyPath: 'id' });
                 sStore.createIndex('by-status', 'status');
                 sStore.createIndex('by-user', 'userId');
+            } else if (oldVersion < 2) {
+                const sStore = transaction.objectStore('sessions');
+                if (!sStore.indexNames.contains('by-status')) sStore.createIndex('by-status', 'status');
+                if (!sStore.indexNames.contains('by-user')) sStore.createIndex('by-user', 'userId');
             }
 
-            // 4. Student Stats & Progression
+            // 4. Student Stats
             if (!db.objectStoreNames.contains('stats')) {
                 db.createObjectStore('stats', { keyPath: 'id' });
             }
