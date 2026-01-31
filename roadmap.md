@@ -1,136 +1,133 @@
-# My-Shanobi: High-Level Roadmap
-Sprint 1: Foundational Core (Phases 1-10)
+# My-Shinobi: Refined Technical Roadmap (2026)
 
-Phase 1: Project Initialization & Directory Scaffolding (Modular Architecture).
+### **Sprint 1: Foundational Core (The Bedrock)**
+*Status: 100% Complete*
 
-Phase 2: Global Types & Domain Schemas (The "Source of Truth").
+* **Phase 1:** Project Initialization & Modular Scaffolding (Vite + React + TS).
+* **Phase 2:** Global Types & Domain Schemas (Subject/Atom/Log/Mastery).
+* **Phase 3:** Design Tokens & **Theme Engine** (CSS Variables for Light/Dark support).
+* **Phase 4:** Persistence: **IndexedDB Adapter** (Offline-First local storage core).
+* **Phase 5:** Cloud: **Firestore Connector** (Real-time bridge and backup).
+* **Phase 6:** Auth: **Firebase Identity Service** & Unified Auth Hooks.
+* **Phase 7:** Security: Role-Based Access Control (**RBAC**) & Protected Routes.
+* **Phase 8:** Layout: The **"Shell" Pattern** (Adaptive containers for Mobile/Web).
+* **Phase 9:** Curriculum: **Bundle Master Index** logic (Firestore Read Optimization).
+* **Phase 10:** Curriculum: **Atom Knowledge Graph** & Learning Dependency logic.
 
-Phase 3: Design Tokens & Theme Engine (CSS Variables for Light/Dark support).
+---
 
-Phase 4: Persistence Layer: IndexedDB Adapter (Offline-First Foundation).
+### **Sprint 2: Content & Infrastructure (The Factory)**
+*Status: 100% Complete*
 
-Phase 5: Persistence Layer: Firestore Connector (Cloud Bridge).
+* **Phase 11:** Ingestion: **SHA-256 Hashing Service** (Content Fingerprinting).
+* **Phase 12:** Ingestion: **Duplicate Gatekeeper** & Version Conflict Resolution.
+* **Phase 13:** Registry: **Semantic Versioning** (1.0.0) for Content Bundles.
+* **Phase 14:** Question Domain: **Base Template Wrapper** (Atomic Component Design).
+* **Phase 15:** Templates: **MCQ & Numeric Input** (Foundation templates).
+* **Phase 16:** Templates: **Two-Tier Reasoning** (Surface answer + Underlying "Why").
+* **Phase 17:** Templates: **Sorting, Matching, & Number Lines** (Advanced Interaction).
+* **Phase 18:** The **"Lens" Engine**: Data Transformers for legacy content adapter.
+* **Phase 19:** Media Service: Asset handling for SVGs, Illustrations, and Subject icons.
+* **Phase 20:** Content Seeding: **English (Tenses) Skeleton** data initialization.
 
-Phase 6: Auth Domain: Identity Service & Clean Auth Hooks.
+---
 
-Phase 7: Auth Domain: Role-Based Access Control (RBAC) & Route Guards.
+### **Sprint 3: The Learning Engine (The Brain)**
+*Status: 100% Complete*
 
-Phase 8: Layout Registry: The "Shell" Pattern (Study Era vs. Quest Dashboard).
+* **Phase 21:** Engine: **Bayesian Knowledge Tracing (BKT)** Mathematical Library.
+* **Phase 22:** Engine: **Selection Orchestrator** (BKT-based "Best-Next" question logic).
+* **Phase 23:** Engine: **Mastery State Management** (Local IDB vs. Remote Firestore).
+* **Phase 24:** Session: **The State Machine** (Idle -> Play -> Summary -> Sync).
+* **Phase 25:** Strategy: **Diagnostic Flow** (Initial skill assessment/placement).
+* **Phase 26:** Strategy: **Remedial Loop** (Automatic focus on weak knowledge atoms).
+* **Phase 27:** Strategy: **Daily Mission Logic** (Habit-forming question targets).
+* **Phase 28:** Sync: **"Write-Through" Buffer Manager** (Safe background cloud pushes).
+* **Phase 29:** Sync: **Monthly Bucket Aggregator** (Optimized Firestore log writes).
+* **Phase 30:** Recovery: **Atomic Transactions** for Bundle Publishing & Versioning.
 
-Phase 9: Curriculum Domain: Subject, Chapter, and Module Graph definitions.
+---
 
-Phase 10: Curriculum Domain: Atom Knowledge Graph & Dependency logic.
+### **Sprint 4: Student Experience & Personalization (The Quest)**
+*Status: 100% Complete*
 
-Sprint 2: Content & Question Infrastructure (Phases 11-20)
+* **Phase 31:** UI: **Universal Navigation Shell** (Contextual Mobile Bottom-Nav).
+* **Phase 32:** UI: **Path-to-Master Map** (Visual quest-style subject progress).
+* **Phase 33:** UI: **Study Era Library** (Detailed hierarchical syllabus view).
+* **Phase 34:** Game Mechanics: **XP, Power Points, & Hero Leveling** logic.
+* **Phase 35:** Game Mechanics: **Badge Vault & Streak Engine** (Persistence & Flame icons).
+* **Phase 36:** Sensory: **Sound FX & Haptic Feedback** (Audio/Tactile reward layer).
+* **Phase 37:** Reporting: **"Parental Report"** (WhatsApp image sharing via Web Share API).
+* **Phase 38:** Personalization: **Hero Profile** (Avatar persistence & Theme preferences).
+* **Phase 39:** Feedback: **Mistake Review** (Remediation loop with teacher explanations).
+* **Phase 40:** Polish: **Skeleton Loaders** & Global App Hydration Guard.
 
-Phase 11: Ingestion Pipeline: The Fingerprint (SHA-256) Hashing Service.
+---
 
-Phase 12: Ingestion Pipeline: Duplicate Gatekeeper & Conflict Resolution logic.
+### **Sprint 5: Admin Intelligence & DevOps (The Mastery)**
+*Status: 100% Complete*
 
-Phase 13: Question Domain: The Versioned Registry (Semantic Versioning).
-
-Phase 14: Question Domain: Base Template & Component Renderer.
-
-Phase 15: Template Implementation: MCQ (v1) & Numeric Input (v1).
-
-Phase 16: Template Implementation: Two-Tier Reasoning & Branching.
-
-Phase 17: Template Implementation: Sorting, Matching, and Number Lines.
-
-Phase 18: The "Lens" Engine: Data Transformers for Template Versioning.
-
-Phase 19: Media Service: Handling SVGs, Images, and Subject Assets.
-
-Phase 20: Content Seeding: English Subject (Tenses) Skeleton Setup.
-
-Sprint 3: The Learning Engine (The Brain) (Phases 21-30)
-
-Phase 21: Engine: Bayesian Math Library (Mastery Calculation Logic).
-
-Phase 22: Engine: The Selection Orchestrator (Picking the "Best Next" ID).
-
-Phase 23: Engine: Mastery State Management (Global vs. Local Sync).
-
-Phase 24: Assessment Domain: The Session Machine (State: Idle -> Play -> Sync).
-
-Phase 25: Assessment Strategy: The Diagnostic Flow.
-
-Phase 26: Assessment Strategy: The Remedial/Reinforcement Flow.
-
-Phase 27: Assessment Strategy: The Daily Mission/Quest Flow.
-
-Phase 28: Sync Service: The "Write-Through" Buffer Manager.
-
-Phase 29: Sync Service: Monthly Bucket Aggregator (Firestore Optimization).
-
-Phase 30: Offline Recovery: Conflict Merging & Error Handling.
-
-Sprint 4: Student Experience & Personalization (Phases 31-40)
-
-Phase 31: Student UI: Navigation Shell & Role-Based Entry.
-
-Phase 32: Student UI: The "Quest" Dashboard (Mobile-First Layout).
-
-Phase 33: Student UI: The "Study Era" Dashboard (Standard Layout).
-
-Phase 34: Game Mechanics: Power Points, XP, and Level Up logic.
-
-Phase 35: Game Mechanics: Achievement Engine & Streak Tracker.
-
-Phase 36: Personalization: "For Me" Recommendation Engine logic.
-
-Phase 37: Subject Specific: English-specific UI components (Tense charts).
-
-Phase 38: UI Components: The "Player" Shell (Timer, Progress, Feedback).
-
-Phase 39: UI Components: Result Screens & Skill Level analysis.
-
-Phase 40: Feedback Loop: Detailed Explanations & Misconception guidance.
-
-Sprint 5: Admin Intelligence & DevOps (Phases 41-50)
-
-Phase 41: Admin UI: The Content Workbench (Subject/Atom Management).
-
-Phase 42: Admin UI: Question Editor with "Duplicate Check" feedback.
-
-Phase 43: Intelligence: Coverage Radar (Gap Analysis Tool).
-
-Phase 44: Intelligence: Student Voice Feed (Error Pattern Tracker).
-
-Phase 45: Intelligence: Pedagogical Health Metrics (Template Diversity).
-
-Phase 46: Testing: The "Warp" Service (Warp to End of Quiz / State Injection).
-
-Phase 47: Testing: Unit Tests for Bayesian & Ingestion logic.
-
-Phase 48: Testing: E2E Playwright Tests (The "Robot Student").
-
-Phase 49: CI/CD: GitHub Actions for "Test-Before-Deploy" automation.
-
-Phase 50: Migration: Final Data Porting from Blue Ninja to My-Shanobi.
+* **Phase 41:** Admin UI: **The Content Workbench** (Subject & Atom CRUD Editor).
+* **Phase 42:** Admin UI: **Bundle Publisher** (Versioning, Change-log, & Atomic Push).
+* **Phase 43:** Intelligence: **Mastery Radar** (Bayesian Probability visualization).
+* **Phase 44:** Admin Logic: **Speed-Run Toggle** (Session constraint override for Testing).
+* **Phase 45:** Architecture: **React Router v6** (Multi-subject URL-based navigation).
+* **Phase 46:** Safety: **Firestore Security Rules** (Auth-based Data Protection).
+* **Phase 47:** Testing: **Unit Tests** for BKT Math & Ingestion Logic (Vitest).
+* **Phase 48:** Testing: **E2E Playwright Tests** (Automated "Robot Student" journey).
+* **Phase 49:** DevOps: **Local "Pre-Flight" Script** (Local Test-Before-Deploy pipeline).
+* **Phase 50:** Migration: **Legacy Data Porting** (Blue Ninja -> My-Shinobi schema mapper).
+---
 
 
 
 src/
-├── core/                # Shared foundational logic
-│   ├── auth/            # Identity service & Role-Based Access
-│   ├── database/        # Firestore & IndexedDB initialization
-│   ├── engine/          # Bayesian Math & Selection logic (The Brain)
-│   ├── intelligence/    # Analytics & Gap analysis logic
-│   └── theme/           # Design Tokens & Theme switching logic
-├── features/            # Independent business modules
-│   ├── admin/           # Workbench, Uploaders, Intelligence UI
-│   ├── assessment/      # Question Player & Session State Machine
-│   ├── curriculum/      # Subject/Atom Knowledge Graphs
-│   ├── progression/     # Power Points, Levels, and Streaks
-│   └── questions/       # Versioned Template Registry & Components
-├── layouts/             # Dashboard "Shells" (Quest vs Study Era)
-├── services/            # Pure logic/Side-effects
-│   ├── sync/            # Firestore Sync & Monthly Bucket Manager
-│   └── validation/      # Hashing & Duplicate Gatekeeper
-├── shared/              # Reusable UI Atoms (Buttons, Cards)
-├── types/               # Global TypeScript interfaces
-└── App.tsx              # Main Router Entry
+├── core/                        # Foundational "Always-On" logic
+│   ├── auth/                    # Firebase Identity, RBAC, & LoadingGuard.tsx
+│   ├── database/                # firebase.ts init & adapter.ts (IDB Wrapper)
+│   ├── engine/                  # The Brain: bayesian.ts & SessionContext.tsx
+│   ├── intelligence/            # MasteryMap.ts & IntelligenceContext.tsx
+│   ├── media/                   # SensoryService.ts (Audio/Haptics) & shareService.ts
+│   ├── theme/                   # ThemeContext.tsx & design-tokens.css
+│   └── debug/                   # WarpService.ts (Speed-run & State Injection)
+├── features/                    # Domain-driven business modules
+│   ├── admin/                   # Content Management
+│   │   ├── components/          # ContentWorkbench, BundleEditor, PublishModal
+│   │   ├── services/            # publishService.ts, versioning.ts
+│   │   └── data/                # UserManagement config
+│   ├── assessment/              # The "Player" experience
+│   │   ├── components/          # QuestSessionUI, QuestSummary, MistakeReview
+│   │   └── hooks/               # useSession.ts, useRemediation.ts
+│   ├── curriculum/              # Knowledge Graph
+│   │   ├── data/                # grade-7-english.ts, grade-7-math.ts
+│   │   └── hooks/               # useBundles.ts
+│   ├── progression/             # Gamification & Identity
+│   │   ├── components/          # DailyMissionCard, HeroProfile, PathToMaster
+│   │   ├── hooks/               # useWeeklyStats.ts, useMission.ts
+│   │   ├── context/             # MissionContext.tsx, ProgressionContext.tsx
+│   │   └── data/                # avatars.ts, badges.ts
+│   └── questions/               # Template Engine
+│       ├── components/          # QuestionRenderer.tsx, MCQTemplate, NumericTemplate
+│       └── registry/            # templateRegistry.ts, lensTransformers.ts
+├── shared/                      # Global UI components & Shells
+│   ├── components/              # ui/ (Button, Card, Skeleton, MasteryGauge)
+│   ├── layouts/                 # UniversalNav.tsx (Switcher), BaseShell.tsx
+│   └── hooks/                   # useFeedback.ts, useDebounce.ts
+├── services/                    # Background logic & Data plumbing
+│   ├── sync/                    # WriteThroughBuffer.ts, SyncService.ts
+│   └── validation/              # hashing.ts, duplicateCheck.ts
+├── types/                       # Global "Source of Truth" interfaces
+│   ├── curriculum.d.ts          # Subject, Chapter, Atom, Bundle
+│   ├── assessment.d.ts          # Session, Log, MasteryState
+│   └── progression.d.ts         # StudentStats, Achievement, Mission
+├── AppRouter.tsx                # React Router v6 mapping
+├── main.tsx                     # Entry point with Providers (Auth, Theme, etc.)
+└── index.css                    # Tailwind & Global styles
+scripts/                         # DevOps & Maintenance
+├── deploy-local.sh              # Pre-flight check & Firebase deploy script
+└── migrate-data.ts              # Legacy data porting utility
+e2e/                             # Playwright "Robot Student" tests
+└── robot-student.spec.ts        # Full session E2E test
 
 
 

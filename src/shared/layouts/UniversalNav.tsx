@@ -20,7 +20,7 @@ export const UniversalNav: React.FC = () => {
     const currentAvatar = AVATARS.find(a => a.id === stats.avatarId) || AVATARS[0];
 
     return (
-        <div className="min-h-screen bg-app-bg flex flex-col transition-colors duration-500">
+        <div className="h-screen bg-app-bg flex flex-col transition-colors duration-500 overflow-y-auto overflow-x-hidden custom-scrollbar">
             {/* Top Bar: Progress & Identity */}
             <header className="sticky top-0 z-40 bg-app-bg/80 backdrop-blur-md border-b border-app-border p-4">
                 <div className="max-w-6xl mx-auto flex justify-between items-center text-text-main">

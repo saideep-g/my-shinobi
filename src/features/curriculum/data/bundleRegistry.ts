@@ -8,6 +8,13 @@ export const BUNDLE_REGISTRY: Record<string, SubjectBundle> = {
     'grade-7-math': Grade7MathBundle
 };
 
-export const getAllBundles = () => Object.values(BUNDLE_REGISTRY);
+export const getAllBundles = () => {
+    // Return unique bundles by their ID to avoid duplicate keys in UI lists
+    const uniqueBundles = new Map<string, SubjectBundle>();
+    Object.values(BUNDLE_REGISTRY).forEach(bundle => {
+        uniqueBundles.set(bundle.id, bundle);
+    });
+    return Array.from(uniqueBundles.values());
+};
 
 export const getBundleById = (id: string) => BUNDLE_REGISTRY[id] || null;
