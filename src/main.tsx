@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
-import './core/theme/tokens.css'; // Importing tokens here to be safe and helpful
+// Tokens are now imported via index.css to share Tailwind context
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

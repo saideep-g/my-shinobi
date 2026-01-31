@@ -1,4 +1,57 @@
-/* CSS Variables for Theme Tokens (Light/Dark Mode) */
+/**
+ * DESIGN TOKENS
+ * This file defines the visual variables for My-Shinobi.
+ * We've removed '@layer base' to avoid PostCSS processing errors when imported.
+ * These variables will still be globally available.
+ */
+
 :root {
-    /* Future tokens will go here */
+    /* --- Brand Colors --- */
+    --color-primary: 37 99 235;
+    /* Blue 600 */
+    --color-secondary: 124 58 237;
+    /* Violet 600 */
+    --color-accent: 16 185 129;
+    /* Emerald 500 */
+
+    /* --- Neutral Surfaces --- */
+    --color-bg: 248 250 252;
+    /* Slate 50 */
+    --color-surface: 255 255 255;
+    /* White */
+    --color-border: 226 232 240;
+    /* Slate 200 */
+
+    /* --- Text --- */
+    --color-text-main: 15 23 42;
+    /* Slate 900 */
+    --color-text-muted: 100 116 139;
+    /* Slate 500 */
+
+    /* --- Shadows --- */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.dark {
+    /* --- Brand Colors (Adjusted for Dark) --- */
+    --color-primary: 59 130 246;
+    /* Blue 500 */
+    --color-secondary: 139 92 246;
+    /* Violet 500 */
+    --color-accent: 52 211 153;
+    /* Emerald 400 */
+
+    /* --- Neutral Surfaces --- */
+    --color-bg: 15 23 42;
+    /* Slate 900 */
+    --color-surface: 30 41 59;
+    /* Slate 800 */
+    --color-border: 51 65 85;
+    /* Slate 700 */
+
+    /* --- Text --- */
+    --color-text-main: 248 250 252;
+    /* Slate 50 */
+    --color-text-muted: 148 163 184;
+    /* Slate 400 */
 }
