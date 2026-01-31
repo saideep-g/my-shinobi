@@ -16,6 +16,8 @@ export interface QuestionLog {
     masteryBefore: number;
     /** Bayesian mastery value after engine calculation */
     masteryAfter: number;
+    /** The curriculum atom this question belongs to */
+    atomId: string;
     /** Captured student misconception if applicable */
     misconceptionTag?: string;
 }

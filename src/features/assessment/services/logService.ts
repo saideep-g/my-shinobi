@@ -22,6 +22,7 @@ export const logService = {
             timestamp: Date.now(),
             masteryBefore,
             masteryAfter,
+            atomId: question.atomId,
             // Metadata can be stored in the question log for deeper analysis later
             // Such as identifying common misconceptions based on the atom
         };
