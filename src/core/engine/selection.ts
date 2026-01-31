@@ -17,11 +17,19 @@ import { generateMathTableQuestion } from '@/features/curriculum/services/tableG
 export const selectNextQuestion = (
     bundle: SubjectBundle,
     masteryMap: MasteryMap,
-    recentQuestionIds: string[] = [] // Prevent immediate repeats
+    recentQuestionIds: string[] = [], // Prevent immediate repeats
+    activeChapterIds?: string[] // School-Sync Guard
 ): QuestionBase | null => {
 
-    // 1. Filter Atoms by Prerequisites and Status
+    // 1. Filter Atoms by School-Sync and Prerequisites
     const unlockedAtoms = bundle.curriculum.chapters
+        .filter(ch => {
+            // If activeChapterIds is provided, only allow chapters in that list
+            if (activeChapterIds && activeChapterIds.length > 0) {
+                return activeChapterIds.includes(ch.id);
+            }
+            return true;
+        })
         .flatMap(ch => ch.atoms)
         .filter(atom => {
             if (atom.status !== 'LIVE') return false;

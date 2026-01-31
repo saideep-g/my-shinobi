@@ -26,6 +26,10 @@ export interface StudentStats {
         questionsPerSession: number; // e.g., 3 for test, 20 for standard
         isDeveloperMode: boolean;
     };
+    /** School-Sync: List of Chapter IDs assigned to the student */
+    activeChapterIds?: string[];
+    /** The student's current academic grade */
+    grade?: number;
 }
 
 export interface Achievement {

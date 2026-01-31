@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useProgression } from '@core/engine/ProgressionContext';
+import { useIntelligence } from '@core/engine/IntelligenceContext';
 import { useAuth } from '@core/auth/AuthContext';
 import { useTheme } from '@core/theme/ThemeContext';
+import { getAllBundles } from '@features/curriculum/data/bundleRegistry';
+import { clsx } from 'clsx';
 import { BadgeVault } from './BadgeVault';
 import { AVATARS } from '../data/avatars';
 import { LogOut, Settings, Camera, ShieldCheck, Lock, Sun, Moon, Award, Calendar } from 'lucide-react';
@@ -18,6 +21,7 @@ interface Props {
 
 export const HeroProfile: React.FC<Props> = ({ onViewHistory }) => {
     const { stats, updateProfileDetails } = useProgression();
+    const { mastery } = useIntelligence();
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const [isEditingAvatar, setIsEditingAvatar] = useState(false);
@@ -142,6 +146,52 @@ export const HeroProfile: React.FC<Props> = ({ onViewHistory }) => {
                 </div>
             </div>
 
+            {/* Learning Path: School-Sync View */}
+            <div className="space-y-6">
+                <header className="flex items-center justify-between px-4">
+                    <h3 className="text-sm font-black text-text-muted uppercase tracking-[0.3em] flex items-center gap-3">
+                        <Lock size={20} className="text-app-primary" fill="currentColor" fillOpacity={0.1} />
+                        Learning Path
+                    </h3>
+                    <span className="text-[10px] font-black text-app-primary uppercase bg-app-primary/10 px-3 py-1 rounded-lg">
+                        Grade {stats.grade || 7}
+                    </span>
+                </header>
+
+                <div className="space-y-4">
+                    {getAllBundles().filter(b => b.grade === (stats.grade || 7)).map(bundle => (
+                        <div key={bundle.id} className="bg-app-surface border border-app-border rounded-[40px] p-6 shadow-sm">
+                            <h4 className="font-black text-text-main py-2 px-2 uppercase text-[10px] tracking-widest text-text-muted">{bundle.curriculum.name}</h4>
+                            <div className="space-y-2 mt-4">
+                                {bundle.curriculum.chapters.map(chapter => {
+                                    const isActive = stats.activeChapterIds?.includes(chapter.id);
+                                    const allAtoms = chapter.atoms;
+                                    const isMastered = allAtoms.every(a => (mastery[a.id] || 0) >= 0.85);
+
+                                    let status: 'TEACHING' | 'COMPLETED' | 'LOCKED' = 'LOCKED';
+                                    if (isMastered) status = 'COMPLETED';
+                                    else if (isActive) status = 'TEACHING';
+
+                                    return (
+                                        <div key={chapter.id} className="flex items-center justify-between p-4 bg-app-bg/50 rounded-2xl border border-app-border group hover:border-app-primary/30 transition-colors">
+                                            <span className="text-xs font-bold text-text-main truncate pr-4">{chapter.title}</span>
+                                            <span className={clsx(
+                                                "text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-widest",
+                                                status === 'COMPLETED' ? "bg-emerald-500/10 text-emerald-600" :
+                                                    status === 'TEACHING' ? "bg-app-primary/10 text-app-primary" :
+                                                        "bg-app-bg text-text-muted"
+                                            )}>
+                                                {status}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* Core Statistics Board */}
             <div className="grid grid-cols-2 gap-6">
                 <div className="bg-app-surface border border-app-border p-8 rounded-[40px] text-center shadow-sm group transition-all">
@@ -166,7 +216,7 @@ export const HeroProfile: React.FC<Props> = ({ onViewHistory }) => {
                             <p className="text-sm text-text-muted font-medium mt-1">Unlock new masks by reaching higher Hero Levels.</p>
                         </header>
 
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-6 mb-10 overflow-y-auto max-h-[40vh] p-2">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-6 mb-10 overflow-y-auto max-h-[40vh] p-2 text-center">
                             {AVATARS.map((avatar) => {
                                 const isLocked = stats.heroLevel < avatar.minLevel;
                                 const isSelected = stats.avatarId === avatar.id;
@@ -176,8 +226,8 @@ export const HeroProfile: React.FC<Props> = ({ onViewHistory }) => {
                                         disabled={isLocked}
                                         onClick={() => handleSelectAvatar(avatar.id)}
                                         className={`group relative aspect-square rounded-[32px] bg-app-bg border-2 flex items-center justify-center transition-all ${!isLocked
-                                                ? isSelected ? 'border-app-primary scale-105 shadow-lg shadow-app-primary/20' : 'border-app-border hover:border-app-primary'
-                                                : 'opacity-40 cursor-not-allowed bg-app-surface/50 border-app-border/10'
+                                            ? isSelected ? 'border-app-primary scale-105 shadow-lg shadow-app-primary/20' : 'border-app-border hover:border-app-primary'
+                                            : 'opacity-40 cursor-not-allowed bg-app-surface/50 border-app-border/10'
                                             }`}
                                     >
                                         {isLocked && <Lock size={16} className="absolute z-10 text-text-muted" />}
@@ -186,11 +236,6 @@ export const HeroProfile: React.FC<Props> = ({ onViewHistory }) => {
                                             alt={avatar.label}
                                             className={`w-14 h-14 object-cover ${isLocked ? 'grayscale' : ''}`}
                                         />
-                                        {!isLocked && (isSelected || !isLocked) && (
-                                            <p className="absolute -bottom-10 left-0 right-0 text-[8px] font-black uppercase text-text-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                                                {avatar.label}
-                                            </p>
-                                        )}
                                     </button>
                                 );
                             })}

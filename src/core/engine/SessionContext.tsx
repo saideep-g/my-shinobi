@@ -60,7 +60,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setRecentIds([]);
 
         // 2. Select the very first question
-        const firstQ = selectNextQuestion(bundle, mastery, []);
+        const firstQ = selectNextQuestion(bundle, mastery, [], stats.activeChapterIds);
         setCurrentQuestion(firstQ);
     };
 
@@ -116,7 +116,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
 
         // 7. Select the next question based on the UPDATED mastery and history
-        const nextQ = selectNextQuestion(activeBundle, mastery, updatedRecent);
+        const nextQ = selectNextQuestion(activeBundle, mastery, updatedRecent, stats.activeChapterIds);
 
         if (nextQ) {
             setCurrentQuestion(nextQ);
