@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { ChapterList } from './ChapterList';
 import { QuestionGrid } from './QuestionGrid';
 import { QuestionPreview } from './QuestionPreview';
+import { CoverageRadar } from './CoverageRadar';
+import { getBundleById } from '@features/curriculum/data/bundleRegistry';
 import { reviewService } from '@/services/db/reviewService';
-import { Activity, ShieldAlert, HeartPulse, Search } from 'lucide-react';
+import { ShieldAlert, HeartPulse, Search } from 'lucide-react';
 import { clsx } from 'clsx';
 
 /**
@@ -13,14 +16,17 @@ import { clsx } from 'clsx';
  */
 
 interface Props {
-    mode?: 'curriculum' | 'questions';
+    mode?: 'curriculum' | 'questions' | 'health';
 }
 
 export const BundleEditor: React.FC<Props> = ({ mode }) => {
-    const [internalTab, setInternalTab] = useState<'curriculum' | 'questions'>('curriculum');
+    const { bundleId } = useParams<{ bundleId: string }>();
+    const [internalTab, setInternalTab] = useState<'curriculum' | 'questions' | 'health'>('curriculum');
     const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
     const [isHealthCheckActive, setIsHealthCheckActive] = useState(false);
+
     const activeTab = mode || internalTab;
+    const bundle = getBundleById(bundleId || 'english-grade-7');
 
     const handleFixAnswer = (newAnswer: string) => {
         if (!selectedQuestion) return;
@@ -78,6 +84,15 @@ export const BundleEditor: React.FC<Props> = ({ mode }) => {
                             >
                                 Question Bank
                             </button>
+                            <button
+                                onClick={() => setInternalTab('health')}
+                                className={`px-8 py-2.5 rounded-xl font-black transition-all text-[10px] uppercase tracking-widest ${activeTab === 'health'
+                                    ? 'bg-app-bg text-app-primary shadow-sm border border-app-border'
+                                    : 'text-text-muted hover:text-text-main hover:bg-app-bg/50'
+                                    }`}
+                            >
+                                Curriculum Health
+                            </button>
                         </div>
                     )}
 
@@ -97,17 +112,18 @@ export const BundleEditor: React.FC<Props> = ({ mode }) => {
                     )}
                 </div>
 
-                {/* View Switcher Area */}
                 <div className="flex-1 bg-app-surface border border-app-border rounded-[40px] p-8 shadow-sm overflow-y-auto custom-scrollbar">
                     {activeTab === 'curriculum' ? (
                         <ChapterList />
-                    ) : (
+                    ) : activeTab === 'questions' ? (
                         <QuestionGrid
                             onSelect={setSelectedQuestion}
                             onFlag={handleFlag}
                             selectedId={selectedQuestion?.id}
                             showHealth={isHealthCheckActive}
                         />
+                    ) : (
+                        bundle ? <CoverageRadar bundle={bundle} /> : <div className="p-20 text-center font-black text-rose-500">Bundle not found</div>
                     )}
                 </div>
             </div>

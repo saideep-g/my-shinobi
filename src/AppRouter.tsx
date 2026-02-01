@@ -72,7 +72,7 @@ const StudentLayoutSwitcher = () => {
 import { AdminLayout } from './layouts/AdminLayout';
 import { AdminDashboard } from '@features/admin/components/AdminDashboard';
 import { ReviewQueue } from '@features/admin/components/ReviewQueue';
-import { CoverageRadar } from '@features/admin/components/CoverageRadar';
+import { LogsExplorer } from '@features/admin/components/LogsExplorer';
 
 export const AppRouter: React.FC = () => {
     return (
@@ -136,7 +136,8 @@ export const AppRouter: React.FC = () => {
                         <Route path="questions/:bundleId" element={<CurriculumManagement />} />
                         <Route path="students" element={<UserManagement />} />
                         <Route path="review" element={<ReviewQueue />} />
-                        <Route path="health" element={<CoverageRadar />} />
+                        <Route path="logs" element={<LogsExplorer />} />
+                        <Route path="health" element={<Navigate to="/admin/curriculum/english-grade-7" replace />} />
                     </Route>
 
                     {/* Fallback */}

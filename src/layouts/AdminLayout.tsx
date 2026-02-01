@@ -8,7 +8,8 @@ import {
     ShieldAlert,
     LogOut,
     Search,
-    Zap
+    Zap,
+    Activity
 } from 'lucide-react';
 import { useAuth } from '@core/auth/AuthContext';
 import { clsx } from 'clsx';
@@ -25,8 +26,9 @@ export const AdminLayout: React.FC = () => {
         { to: '/admin/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
         { to: '/admin/curriculum', icon: <BookOpen size={20} />, label: 'Curriculum' },
         { to: '/admin/students', icon: <Users size={20} />, label: 'User Management' },
+        { to: '/admin/logs', icon: <Activity size={20} />, label: 'Logs Explorer' },
         { to: '/admin/review', icon: <ClipboardList size={20} />, label: 'Review Queue' },
-        { to: '/admin/health', icon: <ShieldAlert size={20} />, label: 'Bias Reports' },
+        { to: '/admin/health', icon: <ShieldAlert size={20} />, label: 'Curriculum Health' },
     ];
 
     return (

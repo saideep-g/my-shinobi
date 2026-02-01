@@ -1,5 +1,5 @@
 import { useLocation, NavLink, Outlet, useParams } from 'react-router-dom';
-import { Database, FileJson, Plus, Users, HelpCircle } from 'lucide-react';
+import { Database, FileJson, Plus, Users, HelpCircle, Heart } from 'lucide-react';
 import { clsx } from 'clsx';
 
 /**
@@ -17,9 +17,10 @@ export const ContentWorkbench: React.FC = () => {
     const isStudents = location.pathname.includes('/admin/students');
     const isQuestions = location.pathname.includes('/admin/questions');
     const isCurriculum = location.pathname.includes('/admin/curriculum');
+    const isHealth = location.pathname.includes('/admin/health');
 
     // Base path for bundle selection
-    const selectionBasePath = isQuestions ? '/admin/questions' : '/admin/curriculum';
+    const selectionBasePath = isHealth ? '/admin/health' : isQuestions ? '/admin/questions' : '/admin/curriculum';
 
     return (
         <div className="flex h-screen bg-app-bg text-text-main overflow-hidden font-sans">
@@ -62,6 +63,19 @@ export const ContentWorkbench: React.FC = () => {
                     >
                         <HelpCircle size={20} />
                         <span className="font-bold">Question Bank</span>
+                    </NavLink>
+
+                    <NavLink
+                        to="/admin/health"
+                        className={({ isActive }) => clsx(
+                            "w-full text-left p-4 rounded-2xl transition-all flex items-center gap-3",
+                            isActive && isHealth
+                                ? "bg-app-primary/10 text-app-primary border border-app-primary/20 shadow-sm"
+                                : "hover:bg-app-bg text-text-muted hover:text-text-main border border-transparent"
+                        )}
+                    >
+                        <Heart size={20} />
+                        <span className="font-bold">Curriculum Health</span>
                     </NavLink>
 
                     <NavLink
