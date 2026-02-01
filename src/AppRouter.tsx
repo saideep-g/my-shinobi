@@ -25,10 +25,17 @@ import { ParentAnalyticsDashboard } from '@features/progression/components/Paren
  * Decides whether to show a specialized dashboard (like Multiplication)
  * or the standard study path map.
  */
-const SubjectRouteSwitch = () => {
+import { TableDashboard } from '@features/progression/components/TableDashboard';
+
+/**
+ * SPECIALIZED SUBJECT WITCH
+ * Ensures that subjects like Multiplication Tables get their high-performance
+ * dashboards regardless of whether the user is in 'Quest' or 'Library' mode.
+ */
+const SpecializedSubjectView = ({ defaultView }: { defaultView: React.ReactNode }) => {
     const { subjectId } = useParams<{ subjectId: string }>();
-    if (subjectId === 'multiplication-tables') return <TablesMasteryDashboard />;
-    return <SubjectMap />;
+    if (subjectId === 'multiplication-tables') return <TableDashboard />;
+    return <>{defaultView}</>;
 };
 
 /**
@@ -71,12 +78,12 @@ export const AppRouter: React.FC = () => {
 
                         {/* Quest Section */}
                         <Route path="/quest" element={<QuestDashboard />} />
-                        <Route path="/quest/:subjectId" element={<SubjectRouteSwitch />} />
+                        <Route path="/quest/:subjectId" element={<SpecializedSubjectView defaultView={<SubjectMap />} />} />
                         <Route path="/quest/:subjectId/play" element={<QuestSessionUI />} />
 
                         {/* Library Section */}
                         <Route path="/library" element={<LibraryDashboard />} />
-                        <Route path="/library/:subjectId" element={<StudyEraSubjectView />} />
+                        <Route path="/library/:subjectId" element={<SpecializedSubjectView defaultView={<StudyEraSubjectView />} />} />
 
                         {/* Profile & History */}
                         <Route path="/profile" element={<HeroProfile />} />

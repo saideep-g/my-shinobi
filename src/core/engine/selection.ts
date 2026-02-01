@@ -18,11 +18,12 @@ export const selectNextQuestion = (
 
     // 1. Filter Atoms by School-Sync and Prerequisites
     const unlockedAtoms = bundle.curriculum.chapters
-        .filter(ch => assignedChapterIds.includes(ch.id))
+        // Dynamic bundles (like Tables) bypass the assigned filter to allow auto-progression
+        .filter(ch => bundle.isDynamic || assignedChapterIds.includes(ch.id))
         .flatMap(ch => ch.atoms)
         .filter(atom => {
             if (atom.status !== 'LIVE') return false;
-            // Standard Prerequisite logic
+            // Standard Prerequisite logic (Bayesian Mastery Check)
             if (!atom.prerequisites || atom.prerequisites.length === 0) return true;
             return atom.prerequisites.every(preId => (masteryMap[preId] || 0) > 0.85);
         });
@@ -37,8 +38,14 @@ export const selectNextQuestion = (
     });
 
     // 3. Dynamic Generation Hook (Blue-Ninja 70/30 Rule)
-    if (bundle.isDynamic && stats?.tablesConfig) {
-        const config = stats.tablesConfig;
+    if (bundle.isDynamic) {
+        // Use provided config or a fresh default for new students
+        const config = stats?.tablesConfig || {
+            currentPathStage: 2,
+            tableStats: {},
+            factStreaks: {},
+            personalBests: {}
+        };
         const currentStage = config.currentPathStage;
 
         // Smart Injection: If current stage is very strong, start showing next stage

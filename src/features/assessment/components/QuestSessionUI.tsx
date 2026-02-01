@@ -60,6 +60,17 @@ export const QuestSessionUI: React.FC = () => {
         }
     };
 
+    // Auto-progress logic for rapid-fire subjects (Tables)
+    useEffect(() => {
+        if (hasSubmitted && lastResult && activeBundle?.id === 'multiplication-tables') {
+            const delay = lastResult.isCorrect ? 800 : 2500;
+            const timer = setTimeout(() => {
+                handleNext();
+            }, delay);
+            return () => clearTimeout(timer);
+        }
+    }, [hasSubmitted, lastResult, activeBundle?.id]);
+
     // 2. Flow Control: Completion -> Review -> Summary
     if (isSessionComplete) {
         if (!reviewFinished) {
@@ -111,8 +122,8 @@ export const QuestSessionUI: React.FC = () => {
                 </div>
             </main>
 
-            {/* Sticky Next Button (Footer) */}
-            {hasSubmitted && (
+            {/* Sticky Next Button (Footer) - Hidden for Tables due to auto-progression */}
+            {hasSubmitted && activeBundle?.id !== 'multiplication-tables' && (
                 <footer className="fixed bottom-0 left-0 right-0 p-6 bg-app-surface border-t border-app-border animate-in slide-in-from-bottom duration-300">
                     <div className="max-w-2xl mx-auto">
                         <button
