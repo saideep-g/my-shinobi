@@ -129,6 +129,23 @@ export const HeroProfile: React.FC<Props> = ({ onViewHistory }) => {
                 </button>
             </div>
 
+            {/* School Sync Status Summary */}
+            <div className="bg-app-surface border border-app-border rounded-[40px] p-8 space-y-6 shadow-sm">
+                <header className="flex items-center justify-between px-2">
+                    <h3 className="text-sm font-black text-text-muted uppercase tracking-widest">School Sync Status</h3>
+                    <span className="px-3 py-1 bg-app-primary/10 text-app-primary rounded-lg text-xs font-black">Grade {stats.grade}</span>
+                </header>
+                <div className="space-y-4 px-2">
+                    {stats.assignedChapterIds?.length ? (
+                        <p className="text-xs font-medium text-text-main">
+                            The Shinobi is currently mastering <span className="text-app-primary font-black">{stats.assignedChapterIds.length}</span> assigned school chapters.
+                        </p>
+                    ) : (
+                        <p className="text-xs italic text-text-muted">No chapters currently assigned by sensei.</p>
+                    )}
+                </div>
+            </div>
+
             {/* Achievement Vault Section */}
             <div className="space-y-6">
                 <header className="flex items-center justify-between px-4">
@@ -164,7 +181,7 @@ export const HeroProfile: React.FC<Props> = ({ onViewHistory }) => {
                             <h4 className="font-black text-text-main py-2 px-2 uppercase text-[10px] tracking-widest text-text-muted">{bundle.curriculum.name}</h4>
                             <div className="space-y-2 mt-4">
                                 {bundle.curriculum.chapters.map(chapter => {
-                                    const isActive = stats.activeChapterIds?.includes(chapter.id);
+                                    const isActive = stats.assignedChapterIds?.includes(chapter.id);
                                     const allAtoms = chapter.atoms;
                                     const isMastered = allAtoms.every(a => (mastery[a.id] || 0) >= 0.85);
 

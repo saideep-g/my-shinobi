@@ -47,7 +47,10 @@ export const UniversalNav: React.FC = () => {
                             </NavLink>
                         )}
 
-                        <div className="p-1 bg-app-surface border border-app-border rounded-full shadow-inner flex items-center">
+                        <NavLink
+                            to="/profile"
+                            className="p-1 bg-app-surface border border-app-border rounded-full shadow-inner flex items-center hover:scale-105 transition-transform active:scale-95"
+                        >
                             <div className="w-9 h-9 rounded-full bg-app-bg border border-app-border overflow-hidden shadow-sm">
                                 <img
                                     src={currentAvatar.url}
@@ -55,7 +58,7 @@ export const UniversalNav: React.FC = () => {
                                     className="w-full h-full object-cover"
                                 />
                             </div>
-                        </div>
+                        </NavLink>
                     </div>
                 </div>
             </header>

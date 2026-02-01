@@ -4,9 +4,12 @@ import { LoadingGuard } from '@core/auth/LoadingGuard';
 import { ProtectedRoute } from '@core/auth/ProtectedRoute';
 import { RoleGuard } from '@core/auth/RoleGuard';
 import { UniversalNav } from '@shared/layouts/UniversalNav';
+import { useProgression } from '@core/engine/ProgressionContext';
 import { HeroProfile } from '@features/progression/components/HeroProfile';
 import { HistoryVault } from '@features/assessment/components/HistoryVault';
 import { ContentWorkbench } from '@features/admin/components/ContentWorkbench';
+import { CurriculumManagement } from '@features/admin/components/CurriculumManagement';
+import { UserManagement } from '@features/admin/components/UserManagement';
 import { SubjectMap } from '@features/progression/components/SubjectMap';
 import { LibraryDashboard } from '@features/progression/components/LibraryDashboard';
 import { StudyEraSubjectView } from '@features/progression/components/StudyEraSubjectView';
@@ -33,6 +36,16 @@ const SubjectRouteSwitch = () => {
  * Separates domains (Student, Admin) and handles deep-linking.
  */
 
+/**
+ * ROOT REDIRECT
+ * Sends the student to their assigned starting layout.
+ */
+const RootRedirect = () => {
+    const { stats } = useProgression();
+    const target = stats.preferredLayout === 'era' ? '/library' : '/quest';
+    return <Navigate to={target} replace />;
+};
+
 export const AppRouter: React.FC = () => {
     return (
         <Router>
@@ -52,8 +65,8 @@ export const AppRouter: React.FC = () => {
                         }
                     >
                         {/* Landing Redirect */}
-                        <Route path="/" element={<Navigate to="/quest" replace />} />
-                        <Route path="/dashboard" element={<Navigate to="/quest" replace />} />
+                        <Route path="/" element={<RootRedirect />} />
+                        <Route path="/dashboard" element={<RootRedirect />} />
 
                         {/* Quest Section */}
                         <Route path="/quest" element={<QuestDashboard />} />
@@ -71,7 +84,7 @@ export const AppRouter: React.FC = () => {
 
                     {/* 2. ADMIN DOMAIN */}
                     <Route
-                        path="/admin/*"
+                        path="/admin"
                         element={
                             <ProtectedRoute>
                                 <RoleGuard allowedRoles={['ADMIN']} redirectTo="/dashboard">
@@ -79,7 +92,14 @@ export const AppRouter: React.FC = () => {
                                 </RoleGuard>
                             </ProtectedRoute>
                         }
-                    />
+                    >
+                        <Route index element={<Navigate to="curriculum" replace />} />
+                        <Route path="curriculum" element={<CurriculumManagement />} />
+                        <Route path="curriculum/:bundleId" element={<CurriculumManagement />} />
+                        <Route path="questions" element={<CurriculumManagement />} />
+                        <Route path="questions/:bundleId" element={<CurriculumManagement />} />
+                        <Route path="students" element={<UserManagement />} />
+                    </Route>
 
                     {/* Fallback */}
                     <Route path="*" element={<Navigate to="/" replace />} />

@@ -9,6 +9,7 @@ export interface MasteryMap {
 }
 
 export interface StudentStats {
+    displayName?: string; // NEW: The student's name for Admin identification
     powerPoints: number;
     heroLevel: number;
     streakCount: number;
@@ -26,10 +27,10 @@ export interface StudentStats {
         questionsPerSession: number; // e.g., 3 for test, 20 for standard
         isDeveloperMode: boolean;
     };
-    /** School-Sync: List of Chapter IDs assigned to the student */
-    activeChapterIds?: string[];
-    /** The student's current academic grade */
-    grade?: number;
+    // NEW: Track the student's current grade (e.g., 2 or 7)
+    grade: number;
+    // NEW: List of Chapter IDs currently assigned by the parent/admin
+    assignedChapterIds: string[];
 }
 
 export interface Achievement {

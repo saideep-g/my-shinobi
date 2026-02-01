@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { BundleEditor } from './BundleEditor';
-import { UserManagement } from './UserManagement';
-import { Database, FileJson, UploadCloud, Plus, Users } from 'lucide-react';
+import { useLocation, NavLink, Outlet, useParams } from 'react-router-dom';
+import { Database, FileJson, Plus, Users, HelpCircle } from 'lucide-react';
+import { clsx } from 'clsx';
 
 /**
  * CONTENT WORKBENCH
@@ -11,8 +10,16 @@ import { Database, FileJson, UploadCloud, Plus, Users } from 'lucide-react';
  */
 
 export const ContentWorkbench: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'content' | 'users'>('content');
-    const [activeBundle, setActiveBundle] = useState<string>('English Grade 7');
+    const { bundleId } = useParams<{ bundleId: string }>();
+    const location = useLocation();
+
+    // Determine active tab based on path
+    const isStudents = location.pathname.includes('/admin/students');
+    const isQuestions = location.pathname.includes('/admin/questions');
+    const isCurriculum = location.pathname.includes('/admin/curriculum');
+
+    // Base path for bundle selection
+    const selectionBasePath = isQuestions ? '/admin/questions' : '/admin/curriculum';
 
     return (
         <div className="flex h-screen bg-app-bg text-text-main overflow-hidden font-sans">
@@ -31,54 +38,76 @@ export const ContentWorkbench: React.FC = () => {
                 <nav className="flex-1 space-y-2">
                     <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-3 mb-4">Core Controls</p>
 
-                    <button
-                        onClick={() => setActiveTab('content')}
-                        className={`w-full text-left p-4 rounded-2xl transition-all flex items-center gap-3 ${activeTab === 'content'
-                            ? 'bg-app-primary/10 text-app-primary border border-app-primary/20 shadow-sm'
-                            : 'hover:bg-app-bg text-text-muted hover:text-text-main border border-transparent'
-                            }`}
+                    <NavLink
+                        to="/admin/curriculum"
+                        className={({ isActive }) => clsx(
+                            "w-full text-left p-4 rounded-2xl transition-all flex items-center gap-3",
+                            isActive && isCurriculum
+                                ? "bg-app-primary/10 text-app-primary border border-app-primary/20 shadow-sm"
+                                : "hover:bg-app-bg text-text-muted hover:text-text-main border border-transparent"
+                        )}
                     >
                         <FileJson size={20} />
-                        <span className="font-bold">Syllabus Editor</span>
-                    </button>
+                        <span className="font-bold">Curriculum</span>
+                    </NavLink>
 
-                    <button
-                        onClick={() => setActiveTab('users')}
-                        className={`w-full text-left p-4 rounded-2xl transition-all flex items-center gap-3 ${activeTab === 'users'
-                            ? 'bg-app-primary/10 text-app-primary border border-app-primary/20 shadow-sm'
-                            : 'hover:bg-app-bg text-text-muted hover:text-text-main border border-transparent'
-                            }`}
+                    <NavLink
+                        to="/admin/questions"
+                        className={({ isActive }) => clsx(
+                            "w-full text-left p-4 rounded-2xl transition-all flex items-center gap-3",
+                            isActive && isQuestions
+                                ? "bg-app-primary/10 text-app-primary border border-app-primary/20 shadow-sm"
+                                : "hover:bg-app-bg text-text-muted hover:text-text-main border border-transparent"
+                        )}
+                    >
+                        <HelpCircle size={20} />
+                        <span className="font-bold">Question Bank</span>
+                    </NavLink>
+
+                    <NavLink
+                        to="/admin/students"
+                        className={({ isActive }) => clsx(
+                            "w-full text-left p-4 rounded-2xl transition-all flex items-center gap-3",
+                            isActive
+                                ? "bg-app-primary/10 text-app-primary border border-app-primary/20 shadow-sm"
+                                : "hover:bg-app-bg text-text-muted hover:text-text-main border border-transparent"
+                        )}
                     >
                         <Users size={20} />
-                        <span className="font-bold">System Guards</span>
-                    </button>
+                        <span className="font-bold">Student Management</span>
+                    </NavLink>
 
                     <div className="pt-8 pb-4">
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-3 mb-4">Master Curriculum</p>
                     </div>
 
-                    <button
-                        disabled={activeTab !== 'content'}
-                        onClick={() => setActiveBundle('English Grade 7')}
-                        className={`w-full text-left p-4 rounded-2xl transition-all flex items-center justify-between group ${activeBundle === 'English Grade 7'
-                            ? 'bg-app-primary/10 text-app-primary border border-app-primary/20 shadow-sm'
-                            : 'hover:bg-app-bg text-text-muted hover:text-text-main border border-transparent'
-                            }`}
+                    <NavLink
+                        to={`${selectionBasePath}/english-grade-7`}
+                        className={({ isActive }) => clsx(
+                            "w-full text-left p-4 rounded-2xl transition-all flex items-center justify-between group",
+                            isActive
+                                ? "bg-app-primary/10 text-app-primary border border-app-primary/20 shadow-sm"
+                                : "hover:bg-app-bg text-text-muted hover:text-text-main border border-transparent",
+                            isStudents && "opacity-50 pointer-events-none"
+                        )}
                     >
                         <span className="font-bold">English Grade 7</span>
-                        {activeBundle === 'English Grade 7' && <div className="w-1.5 h-1.5 rounded-full bg-app-primary animate-pulse" />}
-                    </button>
+                        {bundleId === 'english-grade-7' && <div className="w-1.5 h-1.5 rounded-full bg-app-primary animate-pulse" />}
+                    </NavLink>
 
-                    <button
-                        onClick={() => setActiveBundle('Math Grade 7')}
-                        className={`w-full text-left p-4 rounded-2xl transition-all flex items-center justify-between group ${activeBundle === 'Math Grade 7'
-                            ? 'bg-app-primary/10 text-app-primary border border-app-primary/20 shadow-sm'
-                            : 'hover:bg-app-bg text-text-muted hover:text-text-main border border-transparent'
-                            }`}
+                    <NavLink
+                        to={`${selectionBasePath}/math-grade-7`}
+                        className={({ isActive }) => clsx(
+                            "w-full text-left p-4 rounded-2xl transition-all flex items-center justify-between group",
+                            isActive
+                                ? "bg-app-primary/10 text-app-primary border border-app-primary/20 shadow-sm"
+                                : "hover:bg-app-bg text-text-muted hover:text-text-main border border-transparent",
+                            isStudents && "opacity-50 pointer-events-none"
+                        )}
                     >
                         <span className="font-bold">Math Grade 7</span>
-                        {activeBundle === 'Math Grade 7' && <div className="w-1.5 h-1.5 rounded-full bg-app-primary animate-pulse" />}
-                    </button>
+                        {bundleId === 'math-grade-7' && <div className="w-1.5 h-1.5 rounded-full bg-app-primary animate-pulse" />}
+                    </NavLink>
 
                     <button className="w-full flex items-center justify-center gap-2 p-4 text-app-primary font-black text-xs uppercase tracking-widest hover:bg-app-primary/5 rounded-2xl border-2 border-dashed border-app-primary/20 mt-6 transition-all hover:border-app-primary/40">
                         <Plus size={16} /> New Subject
@@ -97,34 +126,7 @@ export const ContentWorkbench: React.FC = () => {
 
             {/* Main Workbench Area */}
             <main className="flex-1 overflow-y-auto p-12 custom-scrollbar">
-                {activeTab === 'content' ? (
-                    <>
-                        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
-                            <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <span className="bg-app-primary/10 text-app-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border border-app-primary/20">
-                                        Active Bundle
-                                    </span>
-                                    <span className="text-[10px] font-bold text-text-muted">v1.0.1 • Production</span>
-                                </div>
-                                <h2 className="text-4xl font-black tracking-tight text-text-main">{activeBundle}</h2>
-                                <p className="text-text-muted font-medium mt-1">Bundle ID: {activeBundle.toLowerCase().replace(/ /g, '-')}</p>
-                            </div>
-
-                            <div className="flex gap-4">
-                                <button className="flex items-center gap-3 px-8 py-4 bg-app-surface border border-app-border rounded-2xl font-black text-sm hover:translate-y-[-2px] hover:shadow-lg transition-all active:translate-y-0">
-                                    <FileJson size={20} className="text-text-muted" /> Export JSON
-                                </button>
-                                <button className="flex items-center gap-3 px-8 py-4 bg-app-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-app-primary/30 hover:scale-105 transition-all active:scale-95">
-                                    <UploadCloud size={20} /> Publish Bundle
-                                </button>
-                            </div>
-                        </header>
-                        <BundleEditor />
-                    </>
-                ) : (
-                    <UserManagement />
-                )}
+                <Outlet />
             </main>
         </div>
     );

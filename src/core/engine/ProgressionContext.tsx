@@ -32,7 +32,9 @@ const DEFAULT_STATS: StudentStats = {
     sessionConfig: {
         questionsPerSession: 20,
         isDeveloperMode: false
-    }
+    },
+    grade: 7,
+    assignedChapterIds: []
 };
 
 const ProgressionContext = createContext<ProgressionContextType | undefined>(undefined);
@@ -54,12 +56,23 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
             const localStats = await dbAdapter.get<StudentStats & { id: string }>('stats', user.uid);
             if (localStats) {
-                setStats(localStats);
+                // Ensure displayName is synced if it exists in Firebase but not local
+                if (user.displayName && localStats.displayName !== user.displayName) {
+                    const updated = { ...localStats, displayName: user.displayName };
+                    await dbAdapter.put('stats', updated);
+                    setStats(updated);
+                } else {
+                    setStats(localStats);
+                }
             } else {
                 // Initialize new stats for new user
-                const initialStats = { ...DEFAULT_STATS, id: user.uid };
+                const initialStats = {
+                    ...DEFAULT_STATS,
+                    id: user.uid,
+                    displayName: user.displayName || 'Young Shinobi'
+                };
                 await dbAdapter.put('stats', initialStats);
-                setStats(DEFAULT_STATS);
+                setStats(initialStats as StudentStats);
             }
             setIsLoaded(true);
         };
