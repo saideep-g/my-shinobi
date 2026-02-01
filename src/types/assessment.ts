@@ -27,6 +27,8 @@ export interface QuestionLog {
     timeTakenMs?: number;
     isValidForSpeed?: boolean;
     questionType?: 'DIRECT' | 'MISSING_MULTIPLIER';
+    /** Why this question was chosen by the engine */
+    selectionRationale?: string;
 }
 
 export interface AssessmentSession {

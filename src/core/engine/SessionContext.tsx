@@ -40,6 +40,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const [activeBundle, setActiveBundle] = useState<SubjectBundle | null>(null);
     const [currentQuestion, setCurrentQuestion] = useState<QuestionBase | null>(null);
     const [recentIds, setRecentIds] = useState<string[]>([]);
+    const [selectionRationale, setSelectionRationale] = useState<string>('');
     const [isSessionComplete, setIsSessionComplete] = useState(false);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
@@ -61,8 +62,9 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setRecentIds([]);
 
         // 2. Select the very first question
-        const firstQ = selectNextQuestion(bundle, mastery, [], stats.assignedChapterIds, stats);
+        const { question: firstQ, rationale } = selectNextQuestion(bundle, mastery, [], stats.assignedChapterIds, stats);
         setCurrentQuestion(firstQ);
+        setSelectionRationale(rationale);
     };
 
     /**
@@ -91,7 +93,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const mAfter = getAtomMastery(currentQuestion.atomId);
 
         // 4. Generate and Buffer Log to IndexedDB (Write-Through)
-        const log = logService.createLog(currentQuestion, isCorrect, duration, mBefore, mAfter, timeTakenMs);
+        const log = logService.createLog(currentQuestion, isCorrect, duration, mBefore, mAfter, timeTakenMs, selectionRationale);
         await assessmentManager.appendLog(activeSessionId, log);
 
         // 4.5 Update Tables Ledger if this is a table question (Blue-Ninja Parity)
@@ -123,17 +125,18 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
 
         // 7. Select the next question based on the UPDATED mastery and history
-        const nextQ = selectNextQuestion(activeBundle, mastery, updatedRecent, stats.assignedChapterIds, stats);
+        const { question: nextQ, rationale } = selectNextQuestion(activeBundle, mastery, updatedRecent, stats.assignedChapterIds, stats);
 
         if (nextQ) {
             setCurrentQuestion(nextQ);
+            setSelectionRationale(rationale);
         } else {
             console.log("[Session] No more suitable questions found. Finalizing session...");
             await assessmentManager.completeSession(activeSessionId);
             setIsSessionComplete(true);
             setCurrentQuestion(null);
         }
-    }, [currentQuestion, activeBundle, activeSessionId, mastery, recentIds, recordAttempt, getAtomMastery, addXP, updateStreak, stats, updateStats]);
+    }, [currentQuestion, activeBundle, activeSessionId, mastery, recentIds, recordAttempt, getAtomMastery, addXP, updateStreak, stats, updateStats, selectionRationale]);
 
     return (
         <SessionContext.Provider value={{

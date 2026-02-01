@@ -14,7 +14,7 @@ export const selectNextQuestion = (
     recentQuestionIds: string[] = [],
     assignedChapterIds: string[] = [],
     stats?: StudentStats
-): QuestionBase | null => {
+): { question: QuestionBase | null, rationale: string } => {
 
     // 1. Filter Atoms by School-Sync and Prerequisites
     const unlockedAtoms = bundle.curriculum.chapters
@@ -28,7 +28,9 @@ export const selectNextQuestion = (
             return atom.prerequisites.every(preId => (masteryMap[preId] || 0) > 0.85);
         });
 
-    if (unlockedAtoms.length === 0) return null;
+    if (unlockedAtoms.length === 0) {
+        return { question: null, rationale: 'No unlocked/live atoms found.' };
+    }
 
     // 2. Identify the "Priority Atom" (Lowest Mastery)
     const priorityAtom = unlockedAtoms.reduce((prev, curr) => {
@@ -39,7 +41,6 @@ export const selectNextQuestion = (
 
     // 3. Dynamic Generation Hook (Blue-Ninja 70/30 Rule)
     if (bundle.isDynamic) {
-        // Use provided config or a fresh default for new students
         const config = stats?.tablesConfig || {
             currentPathStage: 2,
             tableStats: {},
@@ -48,15 +49,14 @@ export const selectNextQuestion = (
         };
         const currentStage = config.currentPathStage;
 
-        // Smart Injection: If current stage is very strong, start showing next stage
         const currentStageStats = config.tableStats[currentStage];
         const effectiveStage = (currentStageStats?.accuracy > 90) ? currentStage + 1 : currentStage;
 
         const isReview = Math.random() < 0.3;
         let targetAtomId = '';
+        let rationale = '';
 
         if (isReview) {
-            // Pick a random atom from a PREVIOUSLY mastered table
             const masteredTableNums = Object.keys(config.tableStats)
                 .map(Number)
                 .filter(n => config.tableStats[n].status === 'MASTERED');
@@ -66,8 +66,8 @@ export const selectNextQuestion = (
                 : currentStage;
 
             targetAtomId = `table-${targetTable}-${Math.floor(Math.random() * 12) + 1}`;
+            rationale = `Random SRS Review from Stage ${targetTable}`;
         } else {
-            // Target the weakest atom in the current effective stage
             const stageAtoms = bundle.curriculum.chapters
                 .flatMap(ch => ch.atoms)
                 .filter(a => a.id.startsWith(`table-${effectiveStage}-`));
@@ -77,17 +77,16 @@ export const selectNextQuestion = (
                 : priorityAtom;
 
             targetAtomId = weakestInStage.id;
+            rationale = effectiveStage > currentStage ? `Advanced Stage Preview (${effectiveStage})` : `Targeting Weakest Atom in Stage ${effectiveStage}`;
         }
 
         const streak = config.factStreaks[targetAtomId] || 0;
         const masteryVal = masteryMap[targetAtomId] || 0;
 
-        return generateMathTableQuestion(targetAtomId, masteryVal, streak);
-    }
-
-    // Default Dynamic Fallback
-    if (bundle.isDynamic) {
-        return generateMathTableQuestion(priorityAtom.id, masteryMap[priorityAtom.id] || 0);
+        return {
+            question: generateMathTableQuestion(targetAtomId, masteryVal, streak),
+            rationale
+        };
     }
 
     // 4. Static Question Selection
@@ -102,9 +101,18 @@ export const selectNextQuestion = (
             !recentQuestionIds.includes(q.id)
         );
 
-        if (fallbackQuestions.length === 0) return null;
-        return fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)];
+        if (fallbackQuestions.length === 0) {
+            return { question: null, rationale: 'Exhausted all available questions for unlocked atoms.' };
+        }
+
+        return {
+            question: fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)],
+            rationale: 'Random fallback within unlocked curriculum.'
+        };
     }
 
-    return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+    return {
+        question: availableQuestions[Math.floor(Math.random() * availableQuestions.length)],
+        rationale: `Targeting Weakest Atom: ${priorityAtom.title}`
+    };
 };

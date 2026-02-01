@@ -53,5 +53,15 @@ export const dbAdapter = {
     async getSessionsForUser(userId: string) {
         const db = await initDB();
         return db.getAllFromIndex('sessions', 'by-user', userId);
+    },
+
+    async getReviewQueue() {
+        const db = await initDB();
+        return db.getAll('review_queue');
+    },
+
+    async addToReviewQueue(item: any) {
+        const db = await initDB();
+        await db.put('review_queue', item);
     }
 };

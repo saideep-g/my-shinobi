@@ -14,7 +14,8 @@ export const logService = {
         duration: number,
         masteryBefore: number,
         masteryAfter: number,
-        timeTakenMs?: number
+        timeTakenMs?: number,
+        selectionRationale?: string
     ): QuestionLog {
         // Correct and within 150ms to 15s range
         const isValidForSpeed = isCorrect &&
@@ -33,6 +34,7 @@ export const logService = {
             masteryBefore,
             masteryAfter,
             atomId: question.atomId,
+            selectionRationale,
             metadata: question.data?.table ? {
                 factorA: question.data.table,
                 factorB: question.data.multiplier

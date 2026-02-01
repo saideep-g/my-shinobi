@@ -7,7 +7,6 @@ import { UniversalNav } from '@shared/layouts/UniversalNav';
 import { useProgression } from '@core/engine/ProgressionContext';
 import { HeroProfile } from '@features/progression/components/HeroProfile';
 import { HistoryVault } from '@features/assessment/components/HistoryVault';
-import { ContentWorkbench } from '@features/admin/components/ContentWorkbench';
 import { CurriculumManagement } from '@features/admin/components/CurriculumManagement';
 import { UserManagement } from '@features/admin/components/UserManagement';
 import { SubjectMap } from '@features/progression/components/SubjectMap';
@@ -70,6 +69,11 @@ const StudentLayoutSwitcher = () => {
     return <UniversalNav />;
 };
 
+import { AdminLayout } from './layouts/AdminLayout';
+import { AdminDashboard } from '@features/admin/components/AdminDashboard';
+import { ReviewQueue } from '@features/admin/components/ReviewQueue';
+import { CoverageRadar } from '@features/admin/components/CoverageRadar';
+
 export const AppRouter: React.FC = () => {
     return (
         <Router>
@@ -113,23 +117,26 @@ export const AppRouter: React.FC = () => {
                         <Route path="/tables/parent" element={<ParentAnalyticsDashboard />} />
                     </Route>
 
-                    {/* 2. ADMIN DOMAIN */}
+                    {/* 2. ADMIN DOMAIN (Consolidated Desktop Layout) */}
                     <Route
                         path="/admin"
                         element={
                             <ProtectedRoute>
                                 <RoleGuard allowedRoles={['ADMIN']} redirectTo="/dashboard">
-                                    <ContentWorkbench />
+                                    <AdminLayout />
                                 </RoleGuard>
                             </ProtectedRoute>
                         }
                     >
-                        <Route index element={<Navigate to="curriculum" replace />} />
+                        <Route index element={<Navigate to="dashboard" replace />} />
+                        <Route path="dashboard" element={<AdminDashboard />} />
                         <Route path="curriculum" element={<CurriculumManagement />} />
                         <Route path="curriculum/:bundleId" element={<CurriculumManagement />} />
                         <Route path="questions" element={<CurriculumManagement />} />
                         <Route path="questions/:bundleId" element={<CurriculumManagement />} />
                         <Route path="students" element={<UserManagement />} />
+                        <Route path="review" element={<ReviewQueue />} />
+                        <Route path="health" element={<CoverageRadar />} />
                     </Route>
 
                     {/* Fallback */}

@@ -10,7 +10,7 @@ import { StudentStats, MasteryMap } from '@/types/progression';
  */
 
 const DB_NAME = 'my_shinobi_db';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 export interface ShinobiDB {
     subjects: Subject;
@@ -18,6 +18,13 @@ export interface ShinobiDB {
     sessions: AssessmentSession;
     stats: StudentStats & { id: string }; // Local stats per user
     mastery: { id: string; map: MasteryMap }; // Bayesian mastery per user
+    review_queue: {
+        id: string;
+        questionId: string;
+        reason: string;
+        timestamp: number;
+        status: 'PENDING' | 'RESOLVED';
+    };
 }
 
 export const initDB = async (): Promise<IDBPDatabase<ShinobiDB>> => {
@@ -58,6 +65,11 @@ export const initDB = async (): Promise<IDBPDatabase<ShinobiDB>> => {
             // 5. Bayesian Mastery Map
             if (!db.objectStoreNames.contains('mastery')) {
                 db.createObjectStore('mastery', { keyPath: 'id' });
+            }
+
+            // 6. Review Queue
+            if (!db.objectStoreNames.contains('review_queue')) {
+                db.createObjectStore('review_queue', { keyPath: 'id' });
             }
         },
     });

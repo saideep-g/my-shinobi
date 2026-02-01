@@ -3,7 +3,7 @@ import { useProgression } from '@core/engine/ProgressionContext';
 import { dbAdapter } from '@core/database/adapter';
 import { StudentStats } from '@/types/progression';
 import { getAllBundles } from '@features/curriculum/data/bundleRegistry';
-import { BookOpen, GraduationCap, CheckCircle2, Circle, Users, User as UserIcon, ShieldCheck, Smartphone, Map, Save, CloudUpload, RefreshCw, RefreshCcw } from 'lucide-react';
+import { BookOpen, GraduationCap, CheckCircle2, Circle, Users, User as UserIcon, ShieldCheck, Smartphone, Map, Save, CloudUpload, RefreshCw, RefreshCcw, Search } from 'lucide-react';
 import { userService } from '@services/db/userService';
 import { clsx } from 'clsx';
 
@@ -15,9 +15,21 @@ export const UserManagement: React.FC = () => {
     const { stats: currentAdminStats, updateProfileDetails, isDirty, setIsDirty, saveChangesToCloud } = useProgression();
     const [allUsers, setAllUsers] = useState<UserStats[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [subTab, setSubTab] = useState<'settings' | 'logs'>('settings');
+    const [userSessions, setUserSessions] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Load sessions for the selected user
+    useEffect(() => {
+        if (!selectedUserId) return;
+        const loadSessions = async () => {
+            const sessions = await dbAdapter.getSessionsForUser(selectedUserId);
+            setUserSessions(sessions.sort((a, b) => b.startTime - a.startTime));
+        };
+        loadSessions();
+    }, [selectedUserId]);
 
     const handleSave = async () => {
         if (!selectedUser) return;
@@ -188,160 +200,240 @@ export const UserManagement: React.FC = () => {
 
             {selectedUser && (
                 <div className="space-y-12 animate-in fade-in duration-500">
-                    {/* 2. Selected User Badge */}
-                    <div className="px-6 py-4 bg-app-primary/10 border border-app-primary/20 rounded-[28px] flex items-center justify-between shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <ShieldCheck className="text-app-primary" size={24} />
-                            <div>
-                                <p className="text-[10px] font-black text-app-primary uppercase tracking-[0.2em] mb-0.5">Currently Managing</p>
-                                <p className="text-lg font-black text-text-main leading-none">
-                                    {selectedUser.displayName} <span className="text-text-muted font-black opacity-40 ml-2">#{selectedUser.id.slice(0, 8)}</span>
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-6">
-                            <div className="text-right">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Training Layout</p>
-                                <p className="text-sm font-black text-app-primary uppercase italic">{selectedUser.preferredLayout === 'era' ? 'Student Era' : 'Mobile Quest'}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 3. Grade Setup & Insight (Desktop Grid) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-                        <section className="bg-app-surface border border-app-border rounded-[40px] p-8 shadow-sm col-span-1">
-                            <h4 className="text-xl font-black mb-6 flex items-center gap-3">
-                                <GraduationCap className="text-app-primary" /> Grade Assignment
-                            </h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                {[2, 7].map(g => (
-                                    <button
-                                        key={g}
-                                        onClick={() => handleSetGrade(g)}
-                                        className={clsx(
-                                            "py-4 rounded-2xl font-black border-2 transition-all active:scale-95",
-                                            selectedUser.grade === g
-                                                ? "bg-app-primary border-app-primary text-white shadow-lg shadow-app-primary/20"
-                                                : "bg-app-bg border-app-border text-text-muted hover:border-app-primary/30"
-                                        )}
-                                    >
-                                        Grade {g}
-                                    </button>
-                                ))}
-                            </div>
-                            <p className="mt-6 text-[10px] text-text-muted font-black uppercase tracking-widest leading-relaxed">
-                                Current selection: Grade {selectedUser.grade}
-                            </p>
-                        </section>
-
-                        <div className="md:col-span-2 p-10 bg-app-primary/5 border border-app-primary/10 rounded-[40px] flex flex-col justify-center h-full">
-                            <h4 className="text-lg font-black text-app-primary uppercase tracking-widest mb-4 italic">Sensei Insight</h4>
-                            <p className="text-base text-text-main leading-relaxed font-medium">
-                                Toggle school chapters below. The Shinobi will only see questions from <b className="text-app-primary">Assigned</b> chapters that also meet their Bayesian prerequisite requirements (mastery {">"} 85%).
-                            </p>
-                            <div className="mt-6 flex items-center gap-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
-                                <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-app-primary" /> Active Practice</span>
-                                <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-app-border" /> Archived Content</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 4. Layout Preference (Visual Cards) */}
-                    <section className="bg-app-surface border border-app-border rounded-[40px] p-8 shadow-sm">
-                        <h4 className="text-lg font-black mb-6 flex items-center gap-3">
-                            <Smartphone className="text-app-primary" /> Training Intent
-                        </h4>
-                        <div className="grid grid-cols-2 gap-6">
-                            <button
-                                onClick={() => handleSetLayout('quest')}
-                                className={clsx(
-                                    "p-8 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 text-center group",
-                                    selectedUser.preferredLayout === 'quest'
-                                        ? "border-app-primary bg-app-primary/5 shadow-xl shadow-app-primary/10"
-                                        : "border-app-border bg-app-bg text-text-muted hover:border-app-primary/30"
-                                )}
-                            >
-                                <Smartphone size={40} className={clsx("transition-transform group-hover:scale-110", selectedUser.preferredLayout === 'quest' ? "text-app-primary" : "text-text-muted")} />
+                    {/* 2. Selected User Badge & Tab Switcher */}
+                    <div className="bg-app-surface border border-app-border rounded-[40px] overflow-hidden shadow-sm">
+                        <div className="px-8 py-6 bg-app-primary/10 border-b border-app-border flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <ShieldCheck className="text-app-primary" size={28} />
                                 <div>
-                                    <p className="font-black text-sm text-text-main">Mobile Question</p>
-                                    <p className="text-[9px] font-black uppercase tracking-wider opacity-60 mt-1">Vertical High-Speed Practice</p>
+                                    <p className="text-[10px] font-black text-app-primary uppercase tracking-[0.2em] mb-0.5">Currently Managing</p>
+                                    <p className="text-2xl font-black text-text-main leading-none">
+                                        {selectedUser.displayName} <span className="text-text-muted font-black opacity-30 ml-2">#{selectedUser.id.slice(0, 8)}</span>
+                                    </p>
                                 </div>
-                            </button>
-                            <button
-                                onClick={() => handleSetLayout('era')}
-                                className={clsx(
-                                    "p-8 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 text-center group",
-                                    selectedUser.preferredLayout === 'era'
-                                        ? "border-app-primary bg-app-primary/5 shadow-xl shadow-app-primary/10"
-                                        : "border-app-border bg-app-bg text-text-muted hover:border-app-primary/30"
-                                )}
-                            >
-                                <Map size={40} className={clsx("transition-transform group-hover:scale-110", selectedUser.preferredLayout === 'era' ? "text-app-primary" : "text-text-muted")} />
-                                <div>
-                                    <p className="font-black text-sm text-text-main">Student Era</p>
-                                    <p className="text-[9px] font-black uppercase tracking-wider opacity-60 mt-1">Library Search & Discovery</p>
-                                </div>
-                            </button>
+                            </div>
+                            <div className="flex gap-1 bg-white/50 p-1 rounded-2xl border border-app-border items-center">
+                                <button
+                                    onClick={() => setSubTab('settings')}
+                                    className={clsx(
+                                        "px-6 py-2 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center gap-2",
+                                        subTab === 'settings' ? "bg-app-primary text-white shadow-lg" : "text-text-muted hover:bg-white hover:text-text-main"
+                                    )}
+                                >
+                                    <ShieldCheck size={14} /> Settings
+                                </button>
+                                <button
+                                    onClick={() => setSubTab('logs')}
+                                    className={clsx(
+                                        "px-6 py-2 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center gap-2",
+                                        subTab === 'logs' ? "bg-app-primary text-white shadow-lg" : "text-text-muted hover:bg-white hover:text-text-main"
+                                    )}
+                                >
+                                    <Search size={14} /> Logs Explorer
+                                </button>
+                            </div>
                         </div>
-                    </section>
 
-                    {/* 5. Chapter Assignment Grid (Desktop 2-column) */}
-                    <section className="space-y-8">
-                        <h4 className="text-xl font-black flex items-center gap-3 px-2">
-                            <BookOpen className="text-app-accent" /> Master Curriculum Sync
-                        </h4>
+                        {subTab === 'logs' ? (
+                            <div className="p-10 space-y-8 animate-in fade-in duration-500">
+                                <header className="flex justify-between items-center">
+                                    <div>
+                                        <h5 className="text-lg font-black italic">Intelligence Feed</h5>
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">AI Selection Rationales & Session History</p>
+                                    </div>
+                                </header>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {getAllBundles().map(bundle => (
-                                <div key={bundle.id} className={clsx(
-                                    "bg-app-surface border transition-all rounded-[40px] overflow-hidden shadow-sm flex flex-col",
-                                    bundle.grade === selectedUser.grade ? "border-app-primary/30 ring-1 ring-app-primary/10" : "border-app-border"
-                                )}>
-                                    <header className="bg-app-bg/50 p-8 border-b border-app-border flex justify-between items-center">
-                                        <div>
-                                            <p className="font-black text-app-primary uppercase tracking-widest text-[10px] mb-1">{bundle.subjectId}</p>
-                                            <h5 className="font-black text-2xl tracking-tight">{bundle.curriculum.name}</h5>
-                                        </div>
-                                        <div className={clsx(
-                                            "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
-                                            bundle.grade === selectedUser.grade
-                                                ? "bg-app-primary/10 text-app-primary border-app-primary/20"
-                                                : "bg-app-bg text-text-muted border-app-border"
-                                        )}>
-                                            Grade {bundle.grade}
-                                        </div>
-                                    </header>
-                                    <div className="p-6 grid gap-3 overflow-y-auto max-h-[500px] custom-scrollbar">
-                                        {bundle.curriculum.chapters.map(chapter => {
-                                            const isAssigned = selectedUser.assignedChapterIds?.includes(chapter.id);
-                                            return (
+                                {userSessions.length === 0 ? (
+                                    <div className="text-center py-20 border-2 border-dashed border-app-border rounded-[40px] text-text-muted font-black uppercase text-xs">
+                                        No practice sessions found for this user.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {userSessions.slice().reverse().map(session => (
+                                            <div key={session.id} className="bg-app-bg/50 border border-app-border rounded-[32px] overflow-hidden">
+                                                <header className="px-6 py-4 border-b border-app-border flex justify-between items-center bg-white/30">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="px-3 py-1 bg-indigo-500/10 text-indigo-600 rounded-full text-[9px] font-black uppercase">
+                                                            {session.type}
+                                                        </div>
+                                                        <span className="text-[10px] font-bold text-text-muted">
+                                                            {new Date(session.startTime).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-xs font-black text-emerald-500">+{session.pointsGained} XP</span>
+                                                </header>
+                                                <div className="p-6 space-y-4">
+                                                    {session.logs.filter((l: any) => l.selectionRationale).map((log: any, idx: number) => (
+                                                        <div key={idx} className="flex gap-4 group">
+                                                            <div className="flex flex-col items-center gap-1 mt-1">
+                                                                <div className={clsx(
+                                                                    "w-2 h-2 rounded-full",
+                                                                    log.isCorrect ? "bg-emerald-500" : "bg-rose-500"
+                                                                )} />
+                                                                <div className="w-px flex-1 bg-app-border" />
+                                                            </div>
+                                                            <div className="flex-1 pb-4 border-b border-app-border/30 last:border-0">
+                                                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1 flex items-center justify-between">
+                                                                    Question #{log.questionId.slice(0, 6)}
+                                                                    <span>{log.masteryBefore.toFixed(2)} → {log.masteryAfter.toFixed(2)} Mastery</span>
+                                                                </p>
+                                                                <p className="text-xs font-medium text-text-main italic border-l-2 border-app-primary/20 pl-4 py-1">
+                                                                    "{log.selectionRationale}"
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    {session.logs.every((l: any) => !l.selectionRationale) && (
+                                                        <p className="text-[10px] text-center text-text-muted font-bold italic py-4">
+                                                            Standard progression logs (No deep rationale available for this session).
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="p-10 space-y-12">
+                                {/* 3. Grade Setup & Insight (Desktop Grid) */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                                    <section className="bg-app-surface border border-app-border rounded-[40px] p-8 shadow-sm col-span-1 border-opacity-50">
+                                        <h4 className="text-xl font-black mb-6 flex items-center gap-3">
+                                            <GraduationCap className="text-app-primary" /> Grade Assignment
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {[2, 7].map(g => (
                                                 <button
-                                                    key={chapter.id}
-                                                    onClick={() => handleToggleChapter(chapter.id)}
+                                                    key={g}
+                                                    onClick={() => handleSetGrade(g)}
                                                     className={clsx(
-                                                        "flex items-center justify-between p-5 rounded-[24px] border transition-all active:scale-[0.98] group",
-                                                        isAssigned
-                                                            ? 'border-app-primary bg-app-primary/5 shadow-sm shadow-app-primary/5'
-                                                            : 'border-app-border opacity-70 hover:opacity-100 hover:border-app-primary/30'
+                                                        "py-4 rounded-2xl font-black border-2 transition-all active:scale-95",
+                                                        selectedUser.grade === g
+                                                            ? "bg-app-primary border-app-primary text-white shadow-lg shadow-app-primary/20"
+                                                            : "bg-app-bg border-app-border text-text-muted hover:border-app-primary/30"
                                                     )}
                                                 >
-                                                    <div className="text-left">
-                                                        <p className="font-bold text-base text-text-main group-hover:text-app-primary transition-colors">{chapter.title}</p>
-                                                        <p className="text-[10px] uppercase font-black opacity-40 mt-1">{chapter.atoms.length} Knowledge Atoms</p>
-                                                    </div>
-                                                    {isAssigned ? (
-                                                        <CheckCircle2 className="text-app-primary" size={24} />
-                                                    ) : (
-                                                        <Circle className="text-text-muted group-hover:text-app-primary transition-colors" size={24} />
-                                                    )}
+                                                    Grade {g}
                                                 </button>
-                                            );
-                                        })}
+                                            ))}
+                                        </div>
+                                        <p className="mt-6 text-[10px] text-text-muted font-black uppercase tracking-widest leading-relaxed">
+                                            Current selection: Grade {selectedUser.grade}
+                                        </p>
+                                    </section>
+
+                                    <div className="md:col-span-2 p-10 bg-app-primary/5 border border-app-primary/10 rounded-[40px] flex flex-col justify-center h-full">
+                                        <h4 className="text-lg font-black text-app-primary uppercase tracking-widest mb-4 italic">Sensei Insight</h4>
+                                        <p className="text-base text-text-main leading-relaxed font-medium">
+                                            Toggle school chapters below. The Shinobi will only see questions from <b className="text-app-primary">Assigned</b> chapters that also meet their Bayesian prerequisite requirements (mastery {">"} 85%).
+                                        </p>
+                                        <div className="mt-6 flex items-center gap-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
+                                            <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-app-primary" /> Active Practice</span>
+                                            <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-app-border" /> Archived Content</span>
+                                        </div>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </section>
+
+                                {/* 4. Layout Preference (Visual Cards) */}
+                                <section className="bg-app-surface border border-app-border rounded-[40px] p-8 shadow-sm border-opacity-50">
+                                    <h4 className="text-lg font-black mb-6 flex items-center gap-3">
+                                        <Smartphone className="text-app-primary" /> Training Intent
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <button
+                                            onClick={() => handleSetLayout('quest')}
+                                            className={clsx(
+                                                "p-8 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 text-center group",
+                                                selectedUser.preferredLayout === 'quest'
+                                                    ? "border-app-primary bg-app-primary/5 shadow-xl shadow-app-primary/10"
+                                                    : "border-app-border bg-app-bg text-text-muted hover:border-app-primary/30"
+                                            )}
+                                        >
+                                            <Smartphone size={40} className={clsx("transition-transform group-hover:scale-110", selectedUser.preferredLayout === 'quest' ? "text-app-primary" : "text-text-muted")} />
+                                            <div>
+                                                <p className="font-black text-sm text-text-main">Mobile Question</p>
+                                                <p className="text-[9px] font-black uppercase tracking-wider opacity-60 mt-1">Vertical High-Speed Practice</p>
+                                            </div>
+                                        </button>
+                                        <button
+                                            onClick={() => handleSetLayout('era')}
+                                            className={clsx(
+                                                "p-8 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 text-center group",
+                                                selectedUser.preferredLayout === 'era'
+                                                    ? "border-app-primary bg-app-primary/5 shadow-xl shadow-app-primary/10"
+                                                    : "border-app-border bg-app-bg text-text-muted hover:border-app-primary/30"
+                                            )}
+                                        >
+                                            <Map size={40} className={clsx("transition-transform group-hover:scale-110", selectedUser.preferredLayout === 'era' ? "text-app-primary" : "text-text-muted")} />
+                                            <div>
+                                                <p className="font-black text-sm text-text-main">Student Era</p>
+                                                <p className="text-[9px] font-black uppercase tracking-wider opacity-60 mt-1">Library Search & Discovery</p>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </section>
+
+                                {/* 5. Chapter Assignment Grid (Desktop 2-column) */}
+                                <section className="space-y-8">
+                                    <h4 className="text-xl font-black flex items-center gap-3 px-2">
+                                        <BookOpen className="text-app-accent" /> Master Curriculum Sync
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        {getAllBundles().map(bundle => (
+                                            <div key={bundle.id} className={clsx(
+                                                "bg-app-surface border transition-all rounded-[40px] overflow-hidden shadow-sm flex flex-col",
+                                                bundle.grade === selectedUser.grade ? "border-app-primary/30 ring-1 ring-app-primary/10" : "border-app-border"
+                                            )}>
+                                                <header className="bg-app-bg/50 p-8 border-b border-app-border flex justify-between items-center">
+                                                    <div>
+                                                        <p className="font-black text-app-primary uppercase tracking-widest text-[10px] mb-1">{bundle.subjectId}</p>
+                                                        <h5 className="font-black text-2xl tracking-tight">{bundle.curriculum.name}</h5>
+                                                    </div>
+                                                    <div className={clsx(
+                                                        "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                                        bundle.grade === selectedUser.grade
+                                                            ? "bg-app-primary/10 text-app-primary border-app-primary/20"
+                                                            : "bg-app-bg text-text-muted border-app-border"
+                                                    )}>
+                                                        Grade {bundle.grade}
+                                                    </div>
+                                                </header>
+                                                <div className="p-6 grid gap-3 overflow-y-auto max-h-[500px] custom-scrollbar">
+                                                    {bundle.curriculum.chapters.map(chapter => {
+                                                        const isAssigned = selectedUser.assignedChapterIds?.includes(chapter.id);
+                                                        return (
+                                                            <button
+                                                                key={chapter.id}
+                                                                onClick={() => handleToggleChapter(chapter.id)}
+                                                                className={clsx(
+                                                                    "flex items-center justify-between p-5 rounded-[24px] border transition-all active:scale-[0.98] group",
+                                                                    isAssigned
+                                                                        ? 'border-app-primary bg-app-primary/5 shadow-sm shadow-app-primary/5'
+                                                                        : 'border-app-border opacity-70 hover:opacity-100 hover:border-app-primary/30'
+                                                                )}
+                                                            >
+                                                                <div className="text-left">
+                                                                    <p className="font-bold text-base text-text-main group-hover:text-app-primary transition-colors">{chapter.title}</p>
+                                                                    <p className="text-[10px] uppercase font-black opacity-40 mt-1">{chapter.atoms.length} Knowledge Atoms</p>
+                                                                </div>
+                                                                {isAssigned ? (
+                                                                    <CheckCircle2 className="text-app-primary" size={24} />
+                                                                ) : (
+                                                                    <Circle className="text-text-muted group-hover:text-app-primary transition-colors" size={24} />
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
