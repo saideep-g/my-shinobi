@@ -19,11 +19,12 @@ interface MCQProps {
     };
     onAnswer: (answer: any, duration: number) => void;
     isReviewMode: boolean;
+    isPreview?: boolean;
 }
 
-export default function MCQComponent({ data, onAnswer, isReviewMode }: MCQProps) {
+export default function MCQComponent({ data, onAnswer, isReviewMode, isPreview = false }: MCQProps) {
     const [selected, setSelected] = useState<string | null>(null);
-    const { hasSubmitted, submitAnswer } = useBaseQuestion({ onAnswer, isReviewMode });
+    const { hasSubmitted, submitAnswer } = useBaseQuestion({ onAnswer, isReviewMode, isPreview });
 
     const handleSelect = (option: string) => {
         if (hasSubmitted || isReviewMode) return;

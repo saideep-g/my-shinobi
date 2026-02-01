@@ -19,13 +19,15 @@ interface RendererProps {
     data: any;
     onAnswer: (answer: any, duration: number, timeTakenMs?: number) => void;
     isReviewMode?: boolean;
+    isPreview?: boolean;
 }
 
 export const QuestionRenderer: React.FC<RendererProps> = ({
     question,
     data,
     onAnswer,
-    isReviewMode = false
+    isReviewMode = false,
+    isPreview = false
 }) => {
     const manifest = useMemo(() => {
         return questionRegistry.get(question.templateId, question.version);
@@ -60,6 +62,7 @@ export const QuestionRenderer: React.FC<RendererProps> = ({
                 atomId={question.atomId}
                 onAnswer={onAnswer}
                 isReviewMode={isReviewMode}
+                isPreview={isPreview}
             />
         </Suspense>
     );

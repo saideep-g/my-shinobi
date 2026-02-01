@@ -10,9 +10,10 @@ import { useState, useEffect, useRef } from 'react';
 interface UseBaseQuestionProps {
     onAnswer: (answer: any, duration: number, timeTakenMs?: number) => void;
     isReviewMode: boolean;
+    isPreview?: boolean;
 }
 
-export const useBaseQuestion = ({ onAnswer, isReviewMode }: UseBaseQuestionProps) => {
+export const useBaseQuestion = ({ onAnswer, isReviewMode, isPreview = false }: UseBaseQuestionProps) => {
     const startTimeRef = useRef<number>(performance.now());
     const [hasSubmitted, setHasSubmitted] = useState(false);
     // Using useRef for duration tracking if needed in callbacks
