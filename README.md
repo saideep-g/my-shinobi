@@ -106,12 +106,9 @@ const lensedData = lensEngine.applyLens(questionMetadata, rawData, 2);
 ```
 
 ### The Shell System
-Adaptive UI based on the student's `preferredLayout`:
-```tsx
-<StudentShellSelector>
-   <Dashboard />
-</StudentShellSelector>
-```
+Adaptive UI based on the student's `preferredLayout`. The `StudentLayoutSwitcher` dynamically swaps the entire application shell:
+*   **Quest Shell**: Optimized for mobile speed and high-intensity practice.
+*   **Era Shell**: Optimized for 10-inch tablets and deep syllabus exploration.
 
 ---
 
@@ -251,7 +248,28 @@ src/
 
 ---
 
-## 🚀 Sprint 7: High-Fidelity Feedback & AI Content (Planned)
+## 🌌 Sprint 7: Personalization & Tablet Optimization (Completed)
+Sprint 7 delivered a "Multi-Device" evolution, ensuring My-Shinobi feels like a native desktop/tablet app for scholarly study while remaining a fast-paced game on mobile.
+
+### 🏛️ Adaptive Layout Shells
+*   **Student Era Layout**: Implemented a sidebar-driven, desktop-optimized layout for "Era" preferred students. Features a persistent navigation sidebar, glassmorphic headers, and prioritized focus on the syllabus.
+*   **Tablet Optimization (10")**: Refined the "Era" shell specifically for 10-inch tablets (768px-1024px). Optimized touch targets, font scaling (using `font-black text-[10px]` tracking), and sidebar breakpoints to ensure a premium feel on iPad/Android tablets.
+*   **Dynamic Layout Switcher**: A high-level orchestrator that swaps the entire `UniversalNav` (Mobile) and `EraLayout` (Sidebar) shells based on the student's cloud-persisted preference.
+
+### �️ Syllabus Standardization
+*   **The /syllabus Architecture**: Migrated all curriculum data from fragmented `/library` and `/era` routes into a unified `/syllabus` domain.
+*   **Terminology Alignment**: Standardized the use of "Syllabus" across all shells. The "Quest" experience is now branded as the **Quest Scroll** in Era mode, and the curriculum as the **Syllabus Map**.
+*   **Logo Home-Links**: Transformed branding areas into interactive home buttons that use the root redirector to return students to their primary dashboard.
+
+### 🧠 High-Fidelity Feedback & Sync
+*   **Reasoning-First Feedback**: Redesigned MCQ and Numeric feedback to prioritize "Reasoning" over simple "Step-by-Step" instructions. Added high-contrast color coding for accessibility.
+*   **Deep Sync Guard**: Enhanced the `ProgressionContext` to perform an "Atomic Merge" between local IndexedDB stats and cloud Firestore profile data upon login, ensuring layout preferences and levels are never out of sync.
+*   **Hydration Reliability**: Updated the `LoadingGuard` to wait for both Auth and Stats hydration before rendering, eliminating "Flash of Empty State" during initialization.
+
+---
+
+## 🚀 Sprint 8: AI Content & Class Intelligence (Planned)
 *   **AI Explained**: Integrating LLM-based explanation generation for mistakes, tailored to the student's specific error pattern.
 *   **Global Leaderboards**: Competitive peer-groups for schools/classes based on "Power Points" and "Mastery Density."
 *   **Voice Interactions**: Implementing Web Speech API for English speaking and pronunciation exercises.
+*   **Parental Insight Portals**: A dedicated view for parents to see long-term Bayesian stability trends.
