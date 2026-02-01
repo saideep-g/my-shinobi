@@ -18,7 +18,7 @@ export const StudyEraSubjectView: React.FC = () => {
         <div className="space-y-8 animate-in fade-in duration-500">
             <header className="flex items-center gap-4 px-10 pt-6">
                 <button
-                    onClick={() => navigate('/library')}
+                    onClick={() => navigate('/syllabus')}
                     className="p-3 bg-app-surface border border-app-border rounded-2xl hover:bg-app-bg transition-colors"
                 >
                     <ChevronLeft size={20} />

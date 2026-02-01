@@ -6,6 +6,8 @@ import { StudentStats, Achievement, MasteryMap } from '@/types/progression';
 import { useIntelligence } from './IntelligenceContext';
 import { checkNewAchievements } from './achievements/achievementEngine';
 import { syncService } from '@services/sync/syncService';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@core/database/firebase';
 
 /**
  * PROGRESSION CONTEXT
@@ -26,11 +28,12 @@ interface ProgressionContextType {
     isLoaded: boolean;
 }
 
+
 const DEFAULT_STATS: StudentStats = {
     powerPoints: 0,
     heroLevel: 1,
     streakCount: 0,
-    lastActiveDate: new Date().toISOString().split('T')[0],
+    lastActiveDate: '', // Empty initially for hydration check
     activityLog: [],
     preferredLayout: 'quest',
     sessionConfig: {
@@ -59,22 +62,59 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 return;
             }
 
-            const localStats = await dbAdapter.get<StudentStats & { id: string }>('stats', user.uid);
-            if (localStats) {
-                // Ensure displayName is synced if it exists in Firebase but not local
-                if (user.displayName && localStats.displayName !== user.displayName) {
-                    const updated = { ...localStats, displayName: user.displayName };
-                    await dbAdapter.put('stats', updated);
-                    setStats(updated);
+            // 1. Load Local Stats (First Pass for immediate responsiveness)
+            let currentStats = await dbAdapter.get<StudentStats & { id: string }>('stats', user.uid);
+            if (currentStats) {
+                console.log(`[Progression] Local profile found for ${user.uid}:`, {
+                    layout: currentStats.preferredLayout,
+                    grade: currentStats.grade
+                });
+            }
+
+            // 2. Load Cloud Stats (Second Pass for actual truth/sync)
+            try {
+                const cloudRef = doc(db, 'students', user.uid);
+                const cloudSnap = await getDoc(cloudRef);
+
+                if (cloudSnap.exists()) {
+                    const cloudData = cloudSnap.data() as StudentStats;
+                    console.log(`[Progression] Cloud profile found for ${user.uid}:`, {
+                        layout: cloudData.preferredLayout,
+                        grade: cloudData.grade
+                    });
+
+                    // Merge: Cloud wins for settings/meta, local wins for some offline accumulation if needed
+                    currentStats = {
+                        ...currentStats, // Start with local
+                        ...cloudData,    // Cloud overrides (layout, grade, etc.)
+                        id: user.uid
+                    };
+                    await dbAdapter.put('stats', currentStats);
                 } else {
-                    setStats(localStats);
+                    console.log(`[Progression] No cloud profile found for ${user.uid}. Using local.`);
                 }
+            } catch (error) {
+                console.warn("[Progression] Cloud stats fetch failed, falling back to local only", error);
+            }
+
+            if (currentStats) {
+                // Ensure lastActiveDate is set to at least today if it's missing (for the guard)
+                const finalStats = {
+                    ...currentStats,
+                    lastActiveDate: currentStats.lastActiveDate || new Date().toISOString().split('T')[0]
+                };
+                console.log(`[Progression] Final merged profile active:`, {
+                    layout: finalStats.preferredLayout,
+                    grade: finalStats.grade
+                });
+                setStats(finalStats);
             } else {
                 // Initialize new stats for new user
                 const initialStats = {
                     ...DEFAULT_STATS,
                     id: user.uid,
-                    displayName: user.displayName || 'Young Shinobi'
+                    displayName: user.displayName || 'Young Shinobi',
+                    lastActiveDate: new Date().toISOString().split('T')[0]
                 };
                 await dbAdapter.put('stats', initialStats);
                 setStats(initialStats as StudentStats);

@@ -19,6 +19,8 @@ import { LoginPage } from '@features/auth/components/LoginPage';
 import { useParams } from 'react-router-dom';
 import { TablesMasteryDashboard } from '@features/progression/components/TablesMasteryDashboard';
 import { ParentAnalyticsDashboard } from '@features/progression/components/ParentAnalyticsDashboard';
+import { EraLayout } from './layouts/EraLayout';
+import { Outlet } from 'react-router-dom';
 
 /**
  * SUBJECT ROUTE SWITCH
@@ -49,9 +51,23 @@ const SpecializedSubjectView = ({ defaultView }: { defaultView: React.ReactNode 
  * Sends the student to their assigned starting layout.
  */
 const RootRedirect = () => {
+    const { isLoaded } = useProgression();
+
+    if (!isLoaded) return null;
+
+    return <Navigate to="/quest" replace />;
+};
+
+/**
+ * STUDENT LAYOUT SWITCHER
+ * Dynamic shell selection based on student preference.
+ */
+const StudentLayoutSwitcher = () => {
     const { stats } = useProgression();
-    const target = stats.preferredLayout === 'era' ? '/library' : '/quest';
-    return <Navigate to={target} replace />;
+    if (stats.preferredLayout === 'era') {
+        return <EraLayout><Outlet /></EraLayout>;
+    }
+    return <UniversalNav />;
 };
 
 export const AppRouter: React.FC = () => {
@@ -62,12 +78,12 @@ export const AppRouter: React.FC = () => {
                     {/* 0. PUBLIC ACCESS */}
                     <Route path="/login" element={<LoginPage />} />
 
-                    {/* 1. STUDENT DOMAIN (Wrapped in UniversalNav Layout) */}
+                    {/* 1. STUDENT DOMAIN (Wrapped in Dynamic Layout Switcher) */}
                     <Route
                         element={
                             <ProtectedRoute>
                                 <RoleGuard allowedRoles={['STUDENT', 'ADMIN']}>
-                                    <UniversalNav />
+                                    <StudentLayoutSwitcher />
                                 </RoleGuard>
                             </ProtectedRoute>
                         }
@@ -81,9 +97,11 @@ export const AppRouter: React.FC = () => {
                         <Route path="/quest/:subjectId" element={<SpecializedSubjectView defaultView={<SubjectMap />} />} />
                         <Route path="/quest/:subjectId/play" element={<QuestSessionUI />} />
 
-                        {/* Library Section */}
-                        <Route path="/library" element={<LibraryDashboard />} />
-                        <Route path="/library/:subjectId" element={<SpecializedSubjectView defaultView={<StudyEraSubjectView />} />} />
+                        {/* Syllabus Section */}
+                        <Route path="/syllabus" element={<LibraryDashboard />} />
+                        <Route path="/syllabus/:subjectId" element={<SpecializedSubjectView defaultView={<StudyEraSubjectView />} />} />
+                        <Route path="/era" element={<Navigate to="/syllabus" replace />} />
+                        <Route path="/library" element={<Navigate to="/syllabus" replace />} />
 
                         {/* Profile & History */}
                         <Route path="/profile" element={<HeroProfile />} />
