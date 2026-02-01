@@ -70,7 +70,7 @@ const StudentLayoutSwitcher = () => {
 };
 
 import { AdminShell } from '@features/admin/layouts/AdminShell';
-import { AdminDashboard } from '@features/admin/components/AdminDashboard';
+import { SenseiAnalyticsHub } from '@features/admin/components/SenseiAnalyticsHub';
 import { ReviewQueue } from '@features/admin/components/ReviewQueue';
 import { LogsExplorer } from '@features/admin/components/LogsExplorer';
 
@@ -129,7 +129,7 @@ export const AppRouter: React.FC = () => {
                         }
                     >
                         <Route index element={<Navigate to="dashboard" replace />} />
-                        <Route path="dashboard" element={<AdminDashboard />} />
+                        <Route path="dashboard" element={<SenseiAnalyticsHub />} />
                         <Route path="curriculum" element={<CurriculumManagement />} />
                         <Route path="curriculum/:bundleId" element={<CurriculumManagement />} />
                         <Route path="questions" element={<CurriculumManagement />} />

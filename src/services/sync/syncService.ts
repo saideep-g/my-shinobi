@@ -62,5 +62,17 @@ export const syncService = {
             console.error("[SyncService] Sync failed:", error);
             return false;
         }
+    },
+
+    /**
+     * Retrieves all historical sessions for a specific student from Firestore.
+     */
+    async fetchAllSessions(userId: string): Promise<any[]> {
+        const { getDocs, collection, query, orderBy } = await import('firebase/firestore');
+        const sessionRef = collection(db, 'students', userId, 'sessions');
+        const q = query(sessionRef, orderBy('startTime', 'desc'));
+
+        const snap = await getDocs(q);
+        return snap.docs.map(d => ({ ...d.data(), id: d.id }));
     }
 };
