@@ -2,9 +2,10 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { dbAdapter } from '@core/database/adapter';
 import { useAuth } from '@core/auth/AuthContext';
 import { calculateLevel } from './progression';
-import { StudentStats, Achievement } from '@/types/progression';
+import { StudentStats, Achievement, MasteryMap } from '@/types/progression';
 import { useIntelligence } from './IntelligenceContext';
 import { checkNewAchievements } from './achievements/achievementEngine';
+import { syncService } from '@services/sync/syncService';
 
 /**
  * PROGRESSION CONTEXT
@@ -19,6 +20,9 @@ interface ProgressionContextType {
     checkForAchievements: () => Promise<Achievement[]>;
     updateStats: (updates: Partial<StudentStats>) => Promise<void>;
     updateProfileDetails: (updates: Partial<StudentStats>) => Promise<void>;
+    saveChangesToCloud: (userId?: string, statsToSync?: StudentStats) => Promise<void>;
+    isDirty: boolean;
+    setIsDirty: (dirty: boolean) => void;
     isLoaded: boolean;
 }
 
@@ -44,6 +48,7 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const { mastery } = useIntelligence();
     const [stats, setStats] = useState<StudentStats>(DEFAULT_STATS);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isDirty, setIsDirty] = useState(false);
 
     // 1. Load historical stats from IndexedDB on startup/auth change
     useEffect(() => {
@@ -168,7 +173,38 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         if (!user) return;
         const updatedStats = { ...stats, ...updates };
         setStats(updatedStats);
+        setIsDirty(true);
         await dbAdapter.put('stats', { ...updatedStats, id: user.uid });
+    };
+
+    /**
+     * Forces an immediate cloud synchronization of student data.
+     * Can be used to sync the current user or a specific student (by admin).
+     */
+    const saveChangesToCloud = async (userId?: string, statsToSync?: StudentStats) => {
+        const targetUid = userId || user?.uid;
+        const targetStats = statsToSync || stats;
+
+        if (!targetUid) return;
+
+        try {
+            // Fetch latest mastery from local DB for the target user
+            const localMastery = await dbAdapter.get<{ id: string, map: MasteryMap }>('mastery', targetUid);
+
+            const success = await syncService.syncToCloud(
+                targetUid,
+                targetStats,
+                localMastery?.map
+            );
+
+            if (success) {
+                setIsDirty(false);
+                console.log(`[Progression] Manual Cloud Sync Successful for: ${targetUid}`);
+            }
+        } catch (err) {
+            console.error(`[Progression] Manual Sync Failed for ${targetUid}:`, err);
+            throw err; // Re-throw to allow component-level error handling
+        }
     };
 
     return (
@@ -179,6 +215,9 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
             checkForAchievements,
             updateStats,
             updateProfileDetails: updateStats,
+            saveChangesToCloud,
+            isDirty,
+            setIsDirty,
             isLoaded
         }}>
             {children}

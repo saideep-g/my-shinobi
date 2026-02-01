@@ -1,150 +1,120 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useIntelligence } from '@core/engine/IntelligenceContext';
-import { useAuth } from '@core/auth/AuthContext';
-import { dbAdapter } from '@core/database/adapter';
+import React from 'react';
+import { useProgression } from '@/core/engine/ProgressionContext';
+import { FluencyHeatmap } from './FluencyHeatmap';
+import { Star, Trophy, ArrowRight, Zap, Target } from 'lucide-react';
 import { clsx } from 'clsx';
-import { Timer, Target, Zap, ChevronRight, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 /**
  * TABLES MASTERY DASHBOARD
- * Analyzes logs to provide granular speed and accuracy metrics for each table.
+ * The central hub for multiplication table focus.
+ * Shows current stage, table progress cards, and the global heatmap.
  */
 
-interface TableStats {
-    id: number;
-    testedCount: number;
-    accuracy: number;
-    avgSpeed: number;
-    status: 'NOT_STARTED' | 'PRACTICING' | 'MASTERED';
-    mastery: number;
-}
-
 export const TablesMasteryDashboard: React.FC = () => {
-    const { user } = useAuth();
-    const { mastery } = useIntelligence();
-    const [stats, setStats] = useState<TableStats[]>([]);
-    const [globalAvgSpeed, setGlobalAvgSpeed] = useState(0);
+    const { stats } = useProgression();
+    const config = stats.tablesConfig || {
+        currentPathStage: 2,
+        tableStats: {},
+        factStreaks: {},
+        personalBests: {}
+    };
 
-    useEffect(() => {
-        const analyzeLogs = async () => {
-            if (!user) return;
-            const sessions = await dbAdapter.getSessionsForUser(user.uid);
-            const allLogs = sessions.flatMap(s => s.logs || []);
-
-            const tables = Array.from({ length: 11 }, (_, i) => i + 2); // 2x to 12x
-            const analyzed: TableStats[] = tables.map(num => {
-                const atomId = `table-${num}`;
-                const tableLogs = allLogs.filter(l => l.atomId === atomId);
-                const mVal = mastery[atomId] || 0;
-
-                const correctLogs = tableLogs.filter(l => l.isCorrect);
-                const accuracy = tableLogs.length > 0 ? (correctLogs.length / tableLogs.length) * 100 : 0;
-                const avgSpeed = correctLogs.length > 0
-                    ? correctLogs.reduce((acc, l) => acc + l.duration, 0) / correctLogs.length
-                    : 0;
-
-                let status: TableStats['status'] = 'NOT_STARTED';
-                if (mVal > 0.85) status = 'MASTERED';
-                else if (tableLogs.length > 0) status = 'PRACTICING';
-
-                return {
-                    id: num,
-                    testedCount: tableLogs.length,
-                    accuracy,
-                    avgSpeed,
-                    status,
-                    mastery: mVal
-                };
-            });
-
-            setStats(analyzed);
-
-            const allCorrect = allLogs.filter(l => l.isCorrect);
-            if (allCorrect.length > 0) {
-                setGlobalAvgSpeed(allCorrect.reduce((acc, l) => acc + l.duration, 0) / allCorrect.length);
-            }
-        };
-
-        analyzeLogs();
-    }, [user, mastery]);
-
-    const topStrength = useMemo(() => {
-        return [...stats].sort((a, b) => b.accuracy - a.accuracy || a.avgSpeed - b.avgSpeed)[0];
-    }, [stats]);
-
-    const focusArea = useMemo(() => {
-        return stats.find(s => s.status === 'PRACTICING') || stats.find(s => s.status === 'NOT_STARTED');
-    }, [stats]);
+    const currentStage = config.currentPathStage;
 
     return (
-        <div className="space-y-6">
-            {/* 1. Quick Stats Row */}
-            <div className="grid grid-cols-3 gap-3">
-                <div className="bg-app-surface border border-app-border rounded-2xl p-4">
-                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Top Strength</p>
-                    <p className="text-lg font-black text-emerald-500">{topStrength ? `${topStrength.id}x Table` : "---"}</p>
+        <div className="space-y-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* 1. Hero Summary */}
+            <header className="relative bg-app-surface border border-app-border rounded-[48px] p-8 md:p-12 shadow-sm overflow-hidden group">
+                <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-12 group-hover:rotate-0 transition-transform duration-1000">
+                    <Zap size={200} />
                 </div>
-                <div className="bg-app-surface border border-app-border rounded-2xl p-4">
-                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Focus Area</p>
-                    <p className="text-lg font-black text-app-primary">{focusArea ? `${focusArea.id}x Table` : "---"}</p>
-                </div>
-                <div className="bg-app-surface border border-app-border rounded-2xl p-4">
-                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Global Speed</p>
-                    <p className="text-lg font-black text-text-main">{globalAvgSpeed.toFixed(1)}s</p>
-                </div>
-            </div>
 
-            {/* 2. Detailed Grid */}
-            <div className="bg-app-surface border border-app-border rounded-[32px] overflow-hidden">
-                <header className="p-6 border-b border-app-border bg-app-bg/50">
-                    <h3 className="text-sm font-black text-text-main uppercase tracking-widest flex items-center gap-2">
-                        <TrendingUp size={16} className="text-app-primary" />
-                        Fluency Breakdown
-                    </h3>
-                </header>
-
-                <div className="divide-y divide-app-border">
-                    {stats.map(s => (
-                        <div key={s.id} className="p-4 flex items-center justify-between group hover:bg-app-bg/30 transition-colors">
-                            <div className="flex items-center gap-4">
-                                <div className={clsx(
-                                    "w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg shadow-sm border",
-                                    s.status === 'MASTERED' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" :
-                                        s.status === 'PRACTICING' ? "bg-app-primary/10 border-app-primary/20 text-app-primary" :
-                                            "bg-app-bg border-app-border text-text-muted"
-                                )}>
-                                    {s.id}x
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-black text-text-main uppercase">
-                                            {s.status.replace('_', ' ')}
-                                        </span>
-                                        {s.status === 'MASTERED' && (
-                                            <Zap size={10} className="text-amber-500 fill-amber-500" />
-                                        )}
-                                    </div>
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">
-                                        {s.testedCount} Attempts • {Math.round(s.mastery * 100)}% Stability
-                                    </p>
-                                </div>
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                                <Trophy size={20} />
                             </div>
-
-                            <div className="flex items-center gap-6">
-                                <div className="text-right">
-                                    <div className="flex items-center justify-end gap-1 text-emerald-600">
-                                        <Target size={12} />
-                                        <span className="text-sm font-black">{Math.round(s.accuracy)}%</span>
-                                    </div>
-                                    <div className="flex items-center justify-end gap-1 text-text-muted">
-                                        <Timer size={12} />
-                                        <span className="text-[10px] font-bold">{s.avgSpeed.toFixed(1)}s</span>
-                                    </div>
-                                </div>
-                                <ChevronRight size={16} className="text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-indigo-500">Path to Mastery</span>
                         </div>
-                    ))}
+                        <h1 className="text-4xl md:text-5xl font-black text-text-main leading-tight">
+                            You are Mastering <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">
+                                The {currentStage}s Table
+                            </span>
+                        </h1>
+                        <p className="max-w-md text-sm font-medium text-text-muted leading-relaxed">
+                            Defeat the Ghost in the {currentStage}s grid to unlock advanced multipliers and climb the global leaderboards.
+                        </p>
+                    </div>
+
+                    <Link
+                        to="/tables/practice"
+                        className="flex items-center justify-center gap-4 bg-app-primary text-white px-10 py-6 rounded-[28px] font-black uppercase tracking-widest text-sm hover:scale-105 active:scale-95 transition-all shadow-xl shadow-app-primary/30 group/btn"
+                    >
+                        Enter Training Grid
+                        <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                    </Link>
+                </div>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                {/* 2. Fluency Heatmap (Focus Area) */}
+                <div className="lg:col-span-2">
+                    <FluencyHeatmap />
+                </div>
+
+                {/* 3. Table Breakdown Roster */}
+                <div className="space-y-6">
+                    <h3 className="text-sm font-black flex items-center gap-2 px-2">
+                        <Target size={16} className="text-rose-500" /> Progression Roster
+                    </h3>
+                    <div className="space-y-3">
+                        {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(num => {
+                            const table = config.tableStats[num];
+                            const isLocked = num > currentStage;
+                            const isCurrent = num === currentStage;
+
+                            return (
+                                <div
+                                    key={num}
+                                    className={clsx(
+                                        "p-4 rounded-[24px] border transition-all flex items-center justify-between",
+                                        isLocked ? "bg-app-bg opacity-40 border-app-border" : "bg-app-surface border-app-border shadow-sm",
+                                        isCurrent && "border-indigo-500 ring-2 ring-indigo-500/10 shadow-indigo-500/5 outline-2 outline-indigo-500/30"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className={clsx(
+                                            "w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm",
+                                            isLocked ? "bg-app-bg text-text-muted" : "bg-indigo-50 text-indigo-500"
+                                        )}>
+                                            {num}s
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-0.5">
+                                                {table?.status || (isLocked ? 'LOCKED' : 'READY')}
+                                            </p>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-1">
+                                                    <Star size={10} className="text-amber-500" fill="currentColor" />
+                                                    <span className="text-xs font-black">{Math.round(table?.accuracy || 0)}%</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <Zap size={10} className="text-indigo-500" fill="currentColor" />
+                                                    <span className="text-xs font-black">{table?.avgSpeed ? (table.avgSpeed / 1000).toFixed(1) + 's' : '--'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {!isLocked && (
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </div>

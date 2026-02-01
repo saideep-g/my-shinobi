@@ -18,7 +18,7 @@ export const QuestSessionUI: React.FC = () => {
     const navigate = useNavigate();
     const [reviewFinished, setReviewFinished] = useState(false);
     const [hasSubmitted, setHasSubmitted] = useState(false);
-    const [lastResult, setLastResult] = useState<{ isCorrect: boolean, duration: number } | null>(null);
+    const [lastResult, setLastResult] = useState<{ isCorrect: boolean, duration: number, timeTakenMs?: number } | null>(null);
 
     const {
         startSession,
@@ -47,14 +47,14 @@ export const QuestSessionUI: React.FC = () => {
 
     const handleExit = () => navigate('/quest');
 
-    const handleOnAnswer = (isCorrect: boolean, duration: number) => {
-        setLastResult({ isCorrect, duration });
+    const handleOnAnswer = (isCorrect: boolean, duration: number, timeTakenMs?: number) => {
+        setLastResult({ isCorrect, duration, timeTakenMs });
         setHasSubmitted(true);
     };
 
     const handleNext = async () => {
         if (lastResult) {
-            await submitResponse(lastResult.isCorrect, lastResult.duration);
+            await submitResponse(lastResult.isCorrect, lastResult.duration, lastResult.timeTakenMs);
             setHasSubmitted(false);
             setLastResult(null);
         }
@@ -106,7 +106,7 @@ export const QuestSessionUI: React.FC = () => {
                         key={currentQuestion.id}
                         question={currentQuestion}
                         data={currentQuestion.data}
-                        onAnswer={(ans, dur) => handleOnAnswer(ans.isCorrect, dur)}
+                        onAnswer={(ans, dur, ms) => handleOnAnswer(ans.isCorrect, dur, ms)}
                     />
                 </div>
             </main>

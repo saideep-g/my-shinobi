@@ -13,12 +13,22 @@ export const logService = {
         isCorrect: boolean,
         duration: number,
         masteryBefore: number,
-        masteryAfter: number
+        masteryAfter: number,
+        timeTakenMs?: number
     ): QuestionLog {
+        // Correct and within 150ms to 15s range
+        const isValidForSpeed = isCorrect &&
+            timeTakenMs !== undefined &&
+            timeTakenMs > 150 &&
+            timeTakenMs < 15000;
+
         return {
             questionId: question.id,
             isCorrect,
             duration,
+            timeTakenMs,
+            isValidForSpeed,
+            questionType: (question as any).data?.questionType || 'DIRECT',
             timestamp: Date.now(),
             masteryBefore,
             masteryAfter,

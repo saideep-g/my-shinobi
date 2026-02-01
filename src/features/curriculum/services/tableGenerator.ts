@@ -1,63 +1,40 @@
 import { QuestionBase } from '@/types/questions';
 
 /**
- * MULTIPLICATION TABLE GENERATOR
- * Generates dynamic QuestionBase objects for the Math Table subject.
+ * MATH TABLE GENERATOR
+ * Dynamically constructs multiplication fact questions on-the-fly.
+ * Ported from Blue-Ninja-v2 parity requirements.
  */
 
-export const generateMathTableQuestion = (atomId: string, masteryVal: number = 0): QuestionBase => {
-    // 1. Identify Target Table and Multiplier from Atom ID (e.g., 'table-7' or 'table-7-8')
+export const generateMathTableQuestion = (
+    atomId: string,
+    masteryVal: number,
+    streak: number = 0
+): QuestionBase => {
+    // atomId format is guaranteed by curriculum as "table-{t}-{m}"
     const parts = atomId.split('-');
-    const tableNum = parseInt(parts[1] || '1');
-    const multiplier = parts[2] ? parseInt(parts[2]) : Math.floor(Math.random() * 12) + 1;
-    const answer = tableNum * multiplier;
+    const table = parseInt(parts[1]) || 2;
+    const multiplier = parseInt(parts[2]) || 1;
+    const product = table * multiplier;
 
-    // 3. Determine Interaction Type (Fact vs Missing Multiplier)
-    // If mastery is high (> 0.8), introduce missing multipliers with 40% probability
-    const isMissingMultiplier = masteryVal > 0.8 && Math.random() > 0.6;
-    const type = isMissingMultiplier ? 'missing-multiplier' : 'fact';
-
-    // 4. Generate a stable but unique ID for this instance
-    const questionId = `dyn-${atomId}-${multiplier}-${Date.now()}`;
-
-    // 5. Construct the standard QuestionBase payload
-    return {
-        id: questionId,
-        atomId: atomId,
-        templateId: 'math-table',
-        version: 1,
-        difficulty: isMissingMultiplier ? 'MEDIUM' : 'EASY',
-        contentHash: `hash-${tableNum}x${multiplier}-${type}`, // Stable hash for similar problems
-        data: {
-            type: type,
-            table: tableNum,
-            multiplier: multiplier,
-            correctAnswer: isMissingMultiplier ? multiplier.toString() : answer.toString(),
-            subject: 'Mathematics'
-        },
-        tags: ['multiplication', 'dynamic', type]
-    };
-};
-
-/**
- * Generates a "Complete the Table" question (Advanced Interaction)
- */
-export const generateFullTableQuestion = (atomId: string): QuestionBase => {
-    const tableNum = parseInt(atomId.split('-').pop() || '1');
+    // RULE: Missing Multipliers only for high-streak facts
+    const isMissingMultiplier = streak >= 5 && Math.random() < 0.4;
 
     return {
-        id: `dyn-full-${atomId}-${Date.now()}`,
-        atomId: atomId,
+        id: `dyn-table-${atomId}-${Math.random().toString(36).substring(7)}`,
+        contentHash: `hash-${table}-${multiplier}-${isMissingMultiplier}`,
+        atomId,
+        difficulty: masteryVal > 0.8 ? 'HARD' : 'MEDIUM',
         templateId: 'math-table',
         version: 1,
-        difficulty: 'MEDIUM',
-        contentHash: `hash-full-${tableNum}`,
+        tags: ['math', 'multiplication', `table-${table}`],
         data: {
-            type: 'grid', // Full table interaction
-            table: tableNum,
-            range: [1, 10],
-            subject: 'Mathematics'
-        },
-        tags: ['multiplication', 'grid']
+            type: isMissingMultiplier ? 'missing-multiplier' : 'fact',
+            questionType: isMissingMultiplier ? 'MISSING_MULTIPLIER' : 'DIRECT',
+            table,
+            multiplier,
+            correctAnswer: isMissingMultiplier ? multiplier.toString() : product.toString(),
+            subject: 'Multiplication Tables'
+        }
     };
 };

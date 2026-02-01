@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '@core/auth/AuthContext';
 import { useProgression } from '@core/engine/ProgressionContext';
-import { Sword, Library, User, ShieldCheck } from 'lucide-react';
+import { Sword, Library, User, ShieldCheck, Grid3X3 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { AVATARS } from '@features/progression/data/avatars';
 
@@ -37,6 +37,14 @@ export const UniversalNav: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <NavLink
+                            to="/tables"
+                            className="p-3 text-indigo-500 hover:bg-indigo-50 rounded-2xl transition-all group"
+                            title="Open Tables Hub"
+                        >
+                            <Grid3X3 size={22} className="group-hover:scale-110 transition-transform" />
+                        </NavLink>
+
                         {isAdmin && (
                             <NavLink
                                 to="/admin"
@@ -49,7 +57,7 @@ export const UniversalNav: React.FC = () => {
 
                         <NavLink
                             to="/profile"
-                            className="p-1 bg-app-surface border border-app-border rounded-full shadow-inner flex items-center hover:scale-105 transition-transform active:scale-95"
+                            className="p-1 bg-app-surface border border-app-border rounded-full shadow-inner flex items-center hover:scale-110 active:scale-95 transition-all"
                         >
                             <div className="w-9 h-9 rounded-full bg-app-bg border border-app-border overflow-hidden shadow-sm">
                                 <img

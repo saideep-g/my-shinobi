@@ -16,8 +16,9 @@ import { StudyEraSubjectView } from '@features/progression/components/StudyEraSu
 import { QuestDashboard } from '@features/assessment/components/QuestDashboard';
 import { QuestSessionUI } from '@features/assessment/components/QuestSessionUI';
 import { LoginPage } from '@features/auth/components/LoginPage';
-import { TableDashboard } from '@features/progression/components/TableDashboard';
 import { useParams } from 'react-router-dom';
+import { TablesMasteryDashboard } from '@features/progression/components/TablesMasteryDashboard';
+import { ParentAnalyticsDashboard } from '@features/progression/components/ParentAnalyticsDashboard';
 
 /**
  * SUBJECT ROUTE SWITCH
@@ -26,7 +27,7 @@ import { useParams } from 'react-router-dom';
  */
 const SubjectRouteSwitch = () => {
     const { subjectId } = useParams<{ subjectId: string }>();
-    if (subjectId === 'multiplication-tables') return <TableDashboard />;
+    if (subjectId === 'multiplication-tables') return <TablesMasteryDashboard />;
     return <SubjectMap />;
 };
 
@@ -80,6 +81,11 @@ export const AppRouter: React.FC = () => {
                         {/* Profile & History */}
                         <Route path="/profile" element={<HeroProfile />} />
                         <Route path="/history" element={<HistoryVault />} />
+
+                        {/* Tables Mastery Feature Hub (Blue-Ninja Parity) */}
+                        <Route path="/tables" element={<TablesMasteryDashboard />} />
+                        <Route path="/tables/practice" element={<Navigate to="/quest/multiplication-tables/play" replace />} />
+                        <Route path="/tables/parent" element={<ParentAnalyticsDashboard />} />
                     </Route>
 
                     {/* 2. ADMIN DOMAIN */}

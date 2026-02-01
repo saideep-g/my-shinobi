@@ -9,28 +9,37 @@ export interface MasteryMap {
 }
 
 export interface StudentStats {
-    displayName?: string; // NEW: The student's name for Admin identification
+    displayName?: string; // For Admin identification
     powerPoints: number;
     heroLevel: number;
     streakCount: number;
     lastActiveDate: string; // YYYY-MM-DD
-    /** Tracks days of activity for the heat-map */
     activityLog: string[];
-    /** User-selected UI layout ('quest' | 'era') */
     preferredLayout: 'quest' | 'era';
-    /** Collection of earned badges */
+
+    // Cross-Device Persistence Fields
+    grade: number;
+    assignedChapterIds: string[];
+
     achievements?: Achievement[];
-    /** Persisted avatar preference */
     avatarId?: string;
-    /** Admin-controlled session constraints */
     sessionConfig?: {
-        questionsPerSession: number; // e.g., 3 for test, 20 for standard
+        questionsPerSession: number;
         isDeveloperMode: boolean;
     };
-    // NEW: Track the student's current grade (e.g., 2 or 7)
-    grade: number;
-    // NEW: List of Chapter IDs currently assigned by the parent/admin
-    assignedChapterIds: string[];
+
+    // Multiplication Mastery (Feature Parity)
+    tablesConfig?: {
+        currentPathStage: number; // e.g., 7 means mastering the 7s table
+        tableStats: Record<number, {
+            accuracy: number;
+            avgSpeed: number;
+            attempts: number;
+            status: 'LOCKED' | 'PRACTICING' | 'MASTERED';
+        }>;
+        factStreaks: Record<string, number>; // atomId -> current streak
+        personalBests: Record<string, number>; // atomId -> best time in MS
+    };
 }
 
 export interface Achievement {

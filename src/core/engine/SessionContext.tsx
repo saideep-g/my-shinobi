@@ -10,6 +10,7 @@ import { useProgression } from './ProgressionContext';
 import { PROGRESSION_CONSTANTS } from './progression';
 import { SensoryService } from '@core/media/SensoryService';
 import { useMission } from '@/features/progression/context/MissionContext';
+import { updateTablesLedger } from '@/features/progression/data/tablesLedger';
 
 /**
  * SESSION CONTEXT
@@ -22,7 +23,7 @@ interface SessionContextType {
     activeBundle: SubjectBundle | null;
     currentQuestion: QuestionBase | null;
     startSession: (bundle: SubjectBundle) => Promise<void>;
-    submitResponse: (isCorrect: boolean, duration: number) => Promise<void>;
+    submitResponse: (isCorrect: boolean, duration: number, timeTakenMs?: number) => Promise<void>;
     isSessionComplete: boolean;
     recentIds: string[];
     activeSessionId: string | null;
@@ -33,7 +34,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user } = useAuth();
     const { mastery, recordAttempt, getAtomMastery } = useIntelligence();
-    const { stats, addXP, updateStreak } = useProgression();
+    const { stats, addXP, updateStreak, updateStats } = useProgression();
     const { refreshProgress } = useMission();
 
     const [activeBundle, setActiveBundle] = useState<SubjectBundle | null>(null);
@@ -60,7 +61,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setRecentIds([]);
 
         // 2. Select the very first question
-        const firstQ = selectNextQuestion(bundle, mastery, [], stats.assignedChapterIds);
+        const firstQ = selectNextQuestion(bundle, mastery, [], stats.assignedChapterIds, stats);
         setCurrentQuestion(firstQ);
     };
 
@@ -68,7 +69,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
      * Processes a student answer and triggers the selection of the next question.
      * Ensures the response is logged to the local buffer immediately.
      */
-    const submitResponse = useCallback(async (isCorrect: boolean, duration: number) => {
+    const submitResponse = useCallback(async (isCorrect: boolean, duration: number, timeTakenMs?: number) => {
         if (!currentQuestion || !activeBundle || !activeSessionId) return;
 
         // 0. Trigger Sensory Feedback (Mobile Vibrate + Sound)
@@ -90,8 +91,14 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const mAfter = getAtomMastery(currentQuestion.atomId);
 
         // 4. Generate and Buffer Log to IndexedDB (Write-Through)
-        const log = logService.createLog(currentQuestion, isCorrect, duration, mBefore, mAfter);
+        const log = logService.createLog(currentQuestion, isCorrect, duration, mBefore, mAfter, timeTakenMs);
         await assessmentManager.appendLog(activeSessionId, log);
+
+        // 4.5 Update Tables Ledger if this is a table question (Blue-Ninja Parity)
+        if (currentQuestion.atomId.startsWith('table-')) {
+            const statsUpdate = updateTablesLedger(stats, log);
+            await updateStats(statsUpdate);
+        }
 
         // 5. Award XP based on result
         const xpAmount = isCorrect ? PROGRESSION_CONSTANTS.XP_PER_CORRECT : PROGRESSION_CONSTANTS.XP_PER_ATTEMPT;
@@ -116,7 +123,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
 
         // 7. Select the next question based on the UPDATED mastery and history
-        const nextQ = selectNextQuestion(activeBundle, mastery, updatedRecent, stats.assignedChapterIds);
+        const nextQ = selectNextQuestion(activeBundle, mastery, updatedRecent, stats.assignedChapterIds, stats);
 
         if (nextQ) {
             setCurrentQuestion(nextQ);
@@ -126,7 +133,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
             setIsSessionComplete(true);
             setCurrentQuestion(null);
         }
-    }, [currentQuestion, activeBundle, activeSessionId, mastery, recentIds, recordAttempt, getAtomMastery, addXP, updateStreak, stats]);
+    }, [currentQuestion, activeBundle, activeSessionId, mastery, recentIds, recordAttempt, getAtomMastery, addXP, updateStreak, stats, updateStats]);
 
     return (
         <SessionContext.Provider value={{

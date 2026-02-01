@@ -22,6 +22,11 @@ export interface QuestionLog {
     misconceptionTag?: string;
     /** Optional metadata for specific subjects (e.g., factors for math) */
     metadata?: Record<string, any>;
+
+    // Tables Mastery Enrichment
+    timeTakenMs?: number;
+    isValidForSpeed?: boolean;
+    questionType?: 'DIRECT' | 'MISSING_MULTIPLIER';
 }
 
 export interface AssessmentSession {

@@ -16,31 +16,36 @@ export const syncService = {
      * Performs a full synchronization of the student's progress.
      * Syncs: Stats, Mastery Map, and individual Session logs.
      */
-    async syncToCloud(userId: string): Promise<boolean> {
+    async syncToCloud(userId: string, providedStats?: StudentStats, providedMastery?: MasteryMap): Promise<boolean> {
         const batch = writeBatch(db);
 
         try {
             // 1. Sync Student Stats (Level, Power Points, Streaks)
-            const stats = await dbAdapter.get<StudentStats & { id: string }>('stats', userId);
+            const stats = providedStats || await dbAdapter.get<StudentStats & { id: string }>('stats', userId);
             if (stats) {
+                const cleanStats = JSON.parse(JSON.stringify(stats));
                 const statsRef = getStudentDoc(userId);
-                batch.set(statsRef, { ...stats, lastSyncedAt: serverTimestamp() }, { merge: true });
+                batch.set(statsRef, { ...cleanStats, lastSynced: serverTimestamp() }, { merge: true });
             }
 
             // 2. Sync Mastery Map (Bayesian Probabilities)
-            const mastery = await dbAdapter.get<{ id: string, map: MasteryMap }>('mastery', userId);
+            const mastery = providedMastery
+                ? { id: userId, map: providedMastery }
+                : await dbAdapter.get<{ id: string, map: MasteryMap }>('mastery', userId);
+
             if (mastery) {
                 const masteryRef = doc(db, 'students', userId, 'intelligence', 'mastery');
                 batch.set(masteryRef, { map: mastery.map, lastSyncedAt: serverTimestamp() });
             }
 
             // 3. Sync Completed Sessions (Logs)
-            // We only fetch sessions that are COMPLETED but not yet SYNCED
-            const unsyncedSessions = await dbAdapter.getUnsyncedSessions();
+            const unsyncedSessions = await dbAdapter.getUnsyncedSessions(userId);
             for (const session of unsyncedSessions) {
-                // Individual session document in the student's sub-collection
+                // Remove undefined fields to prevent Firestore "Unsupported field value: undefined" errors
+                const cleanSession = JSON.parse(JSON.stringify(session));
+
                 const sessionRef = doc(db, 'students', userId, 'sessions', session.id);
-                batch.set(sessionRef, { ...session, status: 'SYNCED', syncedAt: serverTimestamp() });
+                batch.set(sessionRef, { ...cleanSession, status: 'SYNCED', syncedAt: serverTimestamp() });
             }
 
             // 4. Atomic Commit: Firestore either accepts all or rejects all

@@ -129,19 +129,19 @@ export const HeroProfile: React.FC<Props> = ({ onViewHistory }) => {
                 </button>
             </div>
 
-            {/* School Sync Status Summary */}
-            <div className="bg-app-surface border border-app-border rounded-[40px] p-8 space-y-6 shadow-sm">
-                <header className="flex items-center justify-between px-2">
-                    <h3 className="text-sm font-black text-text-muted uppercase tracking-widest">School Sync Status</h3>
-                    <span className="px-3 py-1 bg-app-primary/10 text-app-primary rounded-lg text-xs font-black">Grade {stats.grade}</span>
-                </header>
-                <div className="space-y-4 px-2">
-                    {stats.assignedChapterIds?.length ? (
-                        <p className="text-xs font-medium text-text-main">
-                            The Shinobi is currently mastering <span className="text-app-primary font-black">{stats.assignedChapterIds.length}</span> assigned school chapters.
+            {/* Learning Path Summary (Above Vault) */}
+            <div className="bg-app-surface border border-app-border rounded-[40px] p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-sm font-black text-text-muted uppercase tracking-[0.2em]">Learning Path</h3>
+                    <span className="px-4 py-1 bg-app-primary/10 text-app-primary rounded-full text-[10px] font-black uppercase">Grade {stats.grade || 7}</span>
+                </div>
+                <div className="space-y-3">
+                    {stats.assignedChapterIds?.length > 0 ? (
+                        <p className="text-sm text-text-main font-medium">
+                            Currently mastering <span className="text-app-primary font-black">{stats.assignedChapterIds.length}</span> chapters assigned by sensei.
                         </p>
                     ) : (
-                        <p className="text-xs italic text-text-muted">No chapters currently assigned by sensei.</p>
+                        <p className="text-sm italic text-text-muted">No chapters currently assigned for this grade.</p>
                     )}
                 </div>
             </div>

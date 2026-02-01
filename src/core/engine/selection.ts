@@ -1,41 +1,33 @@
 import { SubjectBundle } from '@/types/bundles';
-import { MasteryMap } from '@/types/progression';
+import { MasteryMap, StudentStats } from '@/types/progression';
 import { QuestionBase } from '@/types/questions';
-
 import { generateMathTableQuestion } from '@/features/curriculum/services/tableGenerator';
 
 /**
  * SELECTION ENGINE
  * The core logic for choosing the next "Optimal Question."
- * 
- * Priority Logic:
- * 1. Prerequisite Check: Only allow atoms whose prerequisites are mastered (> 0.85).
- * 2. Weak Point Target: Target the unlocked atom with the lowest mastery.
- * 3. Diversity: Prevent immediate repeats of the same question.
  */
 
 export const selectNextQuestion = (
     bundle: SubjectBundle,
     masteryMap: MasteryMap,
-    recentQuestionIds: string[] = [], // Prevent immediate repeats
-    assignedChapterIds: string[] = [] // School-Sync Guard
+    recentQuestionIds: string[] = [],
+    assignedChapterIds: string[] = [],
+    stats?: StudentStats
 ): QuestionBase | null => {
 
     // 1. Filter Atoms by School-Sync and Prerequisites
     const unlockedAtoms = bundle.curriculum.chapters
-        // ONLY allow chapters that have been assigned via the Admin UI
         .filter(ch => assignedChapterIds.includes(ch.id))
         .flatMap(ch => ch.atoms)
         .filter(atom => {
             if (atom.status !== 'LIVE') return false;
+            // Standard Prerequisite logic
             if (!atom.prerequisites || atom.prerequisites.length === 0) return true;
             return atom.prerequisites.every(preId => (masteryMap[preId] || 0) > 0.85);
         });
 
-    if (unlockedAtoms.length === 0) {
-        console.warn("[SelectionEngine] No unlocked LIVE atoms found.");
-        return null;
-    }
+    if (unlockedAtoms.length === 0) return null;
 
     // 2. Identify the "Priority Atom" (Lowest Mastery)
     const priorityAtom = unlockedAtoms.reduce((prev, curr) => {
@@ -44,25 +36,51 @@ export const selectNextQuestion = (
         return currMastery < prevMastery ? curr : prev;
     });
 
-    // 3. Dynamic Generation Hook (Sprint 6: 70/30 Rule)
-    if (bundle.isDynamic) {
-        // 70% chance to pick the lowest-mastery unlocked atom (Current Path)
-        // 30% chance to pick any other mastered atom (Review facts)
-        const isReview = Math.random() < 0.3;
-        const masteredAtoms = bundle.curriculum.chapters
-            .flatMap(ch => ch.atoms)
-            .filter(a => (masteryMap[a.id] || 0) >= 0.85);
+    // 3. Dynamic Generation Hook (Blue-Ninja 70/30 Rule)
+    if (bundle.isDynamic && stats?.tablesConfig) {
+        const config = stats.tablesConfig;
+        const currentStage = config.currentPathStage;
 
-        let targetAtom = priorityAtom;
-        if (isReview && masteredAtoms.length > 0) {
-            targetAtom = masteredAtoms[Math.floor(Math.random() * masteredAtoms.length)];
-            console.log(`[SelectionEngine] Review Loop: Targetting mastered atom: ${targetAtom.id}`);
+        // Smart Injection: If current stage is very strong, start showing next stage
+        const currentStageStats = config.tableStats[currentStage];
+        const effectiveStage = (currentStageStats?.accuracy > 90) ? currentStage + 1 : currentStage;
+
+        const isReview = Math.random() < 0.3;
+        let targetAtomId = '';
+
+        if (isReview) {
+            // Pick a random atom from a PREVIOUSLY mastered table
+            const masteredTableNums = Object.keys(config.tableStats)
+                .map(Number)
+                .filter(n => config.tableStats[n].status === 'MASTERED');
+
+            const targetTable = masteredTableNums.length > 0
+                ? masteredTableNums[Math.floor(Math.random() * masteredTableNums.length)]
+                : currentStage;
+
+            targetAtomId = `table-${targetTable}-${Math.floor(Math.random() * 12) + 1}`;
         } else {
-            console.log(`[SelectionEngine] Current Path: Targetting weakest atom: ${targetAtom.id}`);
+            // Target the weakest atom in the current effective stage
+            const stageAtoms = bundle.curriculum.chapters
+                .flatMap(ch => ch.atoms)
+                .filter(a => a.id.startsWith(`table-${effectiveStage}-`));
+
+            const weakestInStage = stageAtoms.length > 0
+                ? stageAtoms.reduce((prev, curr) => (masteryMap[curr.id] || 0) < (masteryMap[prev.id] || 0) ? curr : prev)
+                : priorityAtom;
+
+            targetAtomId = weakestInStage.id;
         }
 
-        const masteryVal = masteryMap[targetAtom.id] || 0;
-        return generateMathTableQuestion(targetAtom.id, masteryVal);
+        const streak = config.factStreaks[targetAtomId] || 0;
+        const masteryVal = masteryMap[targetAtomId] || 0;
+
+        return generateMathTableQuestion(targetAtomId, masteryVal, streak);
+    }
+
+    // Default Dynamic Fallback
+    if (bundle.isDynamic) {
+        return generateMathTableQuestion(priorityAtom.id, masteryMap[priorityAtom.id] || 0);
     }
 
     // 4. Static Question Selection

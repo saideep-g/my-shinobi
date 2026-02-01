@@ -8,12 +8,12 @@ import { useState, useEffect, useRef } from 'react';
  */
 
 interface UseBaseQuestionProps {
-    onAnswer: (answer: any, duration: number) => void;
+    onAnswer: (answer: any, duration: number, timeTakenMs?: number) => void;
     isReviewMode: boolean;
 }
 
 export const useBaseQuestion = ({ onAnswer, isReviewMode }: UseBaseQuestionProps) => {
-    const [startTime] = useState<number>(Date.now());
+    const startTimeRef = useRef<number>(performance.now());
     const [hasSubmitted, setHasSubmitted] = useState(false);
     // Using useRef for duration tracking if needed in callbacks
     const durationRef = useRef<number>(0);
@@ -25,20 +25,23 @@ export const useBaseQuestion = ({ onAnswer, isReviewMode }: UseBaseQuestionProps
         if (isReviewMode || hasSubmitted) return;
 
         const interval = setInterval(() => {
-            const currentDuration = Math.floor((Date.now() - startTime) / 1000);
+            const currentDuration = Math.floor((performance.now() - startTimeRef.current) / 1000);
             setElapsed(currentDuration);
             durationRef.current = currentDuration;
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [startTime, isReviewMode, hasSubmitted]);
+    }, [isReviewMode, hasSubmitted]);
 
     const submitAnswer = (answer: any) => {
         if (hasSubmitted || isReviewMode) return;
 
-        const finalDuration = Math.floor((Date.now() - startTime) / 1000);
+        const endTime = performance.now();
+        const timeTakenMs = Math.round(endTime - startTimeRef.current);
+        const finalDuration = Math.floor(timeTakenMs / 1000);
+
         setHasSubmitted(true);
-        onAnswer(answer, finalDuration);
+        onAnswer(answer, finalDuration, timeTakenMs);
     };
 
     return {

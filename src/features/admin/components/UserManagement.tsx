@@ -3,23 +3,33 @@ import { useProgression } from '@core/engine/ProgressionContext';
 import { dbAdapter } from '@core/database/adapter';
 import { StudentStats } from '@/types/progression';
 import { getAllBundles } from '@features/curriculum/data/bundleRegistry';
-import { BookOpen, GraduationCap, CheckCircle2, Circle, Users, User as UserIcon, ShieldCheck, Smartphone, Map } from 'lucide-react';
+import { BookOpen, GraduationCap, CheckCircle2, Circle, Users, User as UserIcon, ShieldCheck, Smartphone, Map, Save, CloudUpload, RefreshCw } from 'lucide-react';
 import { clsx } from 'clsx';
 
-/**
- * USER MANAGEMENT (Admin Tool)
- * Allows the manager to override school grade and assign specific curriculum chapters.
- * Now supports selecting which student to manage.
- */
 interface UserStats extends StudentStats {
     id: string;
 }
 
 export const UserManagement: React.FC = () => {
-    const { stats: currentAdminStats, updateProfileDetails } = useProgression();
+    const { stats: currentAdminStats, updateProfileDetails, isDirty, setIsDirty, saveChangesToCloud } = useProgression();
     const [allUsers, setAllUsers] = useState<UserStats[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSave = async () => {
+        if (!selectedUser) return;
+        setIsSaving(true);
+        try {
+            await saveChangesToCloud(selectedUser.id, selectedUser);
+            // On success, isDirty is cleared inside the context
+        } catch (error) {
+            console.error("[UserManagement] Failed to sync selected user:", error);
+            // Error handling could show a toast here
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     // Current context stats don't always have ID visible in the same way, but we know uid from auth
     const adminId = (currentAdminStats as any).id || '';
@@ -56,6 +66,9 @@ export const UserManagement: React.FC = () => {
         // Update local state
         setAllUsers(prev => prev.map(u => u.id === selectedUserId ? updatedUser : u));
 
+        // Mark as unsaved
+        setIsDirty(true);
+
         // If managing self, also update current context
         if (selectedUserId === adminId) {
             await updateProfileDetails({ assignedChapterIds: next });
@@ -73,6 +86,9 @@ export const UserManagement: React.FC = () => {
         // Update local state
         setAllUsers(prev => prev.map(u => u.id === selectedUserId ? updatedUser : u));
 
+        // Mark as unsaved
+        setIsDirty(true);
+
         // If managing self, also update current context
         if (selectedUserId === adminId) {
             await updateProfileDetails({ grade });
@@ -89,6 +105,9 @@ export const UserManagement: React.FC = () => {
 
         // Update local state
         setAllUsers(prev => prev.map(u => u.id === selectedUserId ? updatedUser : u));
+
+        // Mark as unsaved
+        setIsDirty(true);
 
         // If managing self, also update current context
         if (selectedUserId === adminId) {
@@ -145,110 +164,181 @@ export const UserManagement: React.FC = () => {
             </section>
 
             {selectedUser && (
-                <div className="space-y-10 animate-in fade-in duration-500">
+                <div className="space-y-12 animate-in fade-in duration-500">
                     {/* 2. Selected User Badge */}
-                    <div className="px-4 py-3 bg-app-primary/10 border border-app-primary/20 rounded-2xl flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <ShieldCheck className="text-app-primary" size={18} />
-                            <p className="text-xs font-black text-app-primary uppercase tracking-widest">
-                                Managing: <span className="underline">{selectedUser.displayName}</span>
-                            </p>
+                    <div className="px-6 py-4 bg-app-primary/10 border border-app-primary/20 rounded-[28px] flex items-center justify-between shadow-sm">
+                        <div className="flex items-center gap-4">
+                            <ShieldCheck className="text-app-primary" size={24} />
+                            <div>
+                                <p className="text-[10px] font-black text-app-primary uppercase tracking-[0.2em] mb-0.5">Currently Managing</p>
+                                <p className="text-lg font-black text-text-main leading-none">
+                                    {selectedUser.displayName} <span className="text-text-muted font-black opacity-40 ml-2">#{selectedUser.id.slice(0, 8)}</span>
+                                </p>
+                            </div>
                         </div>
-                        <span className="text-[9px] font-black text-text-muted">UID: {selectedUser.id.slice(0, 8)}...</span>
+                        <div className="flex items-center gap-6">
+                            <div className="text-right">
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Training Layout</p>
+                                <p className="text-sm font-black text-app-primary uppercase italic">{selectedUser.preferredLayout === 'era' ? 'Student Era' : 'Mobile Quest'}</p>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* 3. Grade Selection */}
-                    <section className="bg-app-surface border border-app-border rounded-[40px] p-8 shadow-sm">
-                        <h4 className="text-lg font-black mb-6 flex items-center gap-3">
-                            <GraduationCap className="text-app-primary" /> Set Student Grade
-                        </h4>
-                        <div className="flex gap-4">
-                            {[2, 7].map(g => (
-                                <button
-                                    key={g}
-                                    onClick={() => handleSetGrade(g)}
-                                    className={`px-8 py-3 rounded-2xl font-black transition-all active:scale-95 ${selectedUser.grade === g ? 'bg-app-primary text-white shadow-lg' : 'bg-app-bg text-text-muted border border-app-border'
-                                        }`}
-                                >
-                                    Grade {g}
-                                </button>
-                            ))}
-                        </div>
-                    </section>
+                    {/* 3. Grade Setup & Insight (Desktop Grid) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                        <section className="bg-app-surface border border-app-border rounded-[40px] p-8 shadow-sm col-span-1">
+                            <h4 className="text-xl font-black mb-6 flex items-center gap-3">
+                                <GraduationCap className="text-app-primary" /> Grade Assignment
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                {[2, 7].map(g => (
+                                    <button
+                                        key={g}
+                                        onClick={() => handleSetGrade(g)}
+                                        className={clsx(
+                                            "py-4 rounded-2xl font-black border-2 transition-all active:scale-95",
+                                            selectedUser.grade === g
+                                                ? "bg-app-primary border-app-primary text-white shadow-lg shadow-app-primary/20"
+                                                : "bg-app-bg border-app-border text-text-muted hover:border-app-primary/30"
+                                        )}
+                                    >
+                                        Grade {g}
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="mt-6 text-[10px] text-text-muted font-black uppercase tracking-widest leading-relaxed">
+                                Current selection: Grade {selectedUser.grade}
+                            </p>
+                        </section>
 
-                    {/* 4. Layout Preference */}
+                        <div className="md:col-span-2 p-10 bg-app-primary/5 border border-app-primary/10 rounded-[40px] flex flex-col justify-center h-full">
+                            <h4 className="text-lg font-black text-app-primary uppercase tracking-widest mb-4 italic">Sensei Insight</h4>
+                            <p className="text-base text-text-main leading-relaxed font-medium">
+                                Toggle school chapters below. The Shinobi will only see questions from <b className="text-app-primary">Assigned</b> chapters that also meet their Bayesian prerequisite requirements (mastery {">"} 85%).
+                            </p>
+                            <div className="mt-6 flex items-center gap-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
+                                <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-app-primary" /> Active Practice</span>
+                                <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-app-border" /> Archived Content</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 4. Layout Preference (Visual Cards) */}
                     <section className="bg-app-surface border border-app-border rounded-[40px] p-8 shadow-sm">
                         <h4 className="text-lg font-black mb-6 flex items-center gap-3">
-                            <Smartphone className="text-app-primary" /> Training Layout
+                            <Smartphone className="text-app-primary" /> Training Intent
                         </h4>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-6">
                             <button
                                 onClick={() => handleSetLayout('quest')}
                                 className={clsx(
-                                    "p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 text-center",
+                                    "p-8 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 text-center group",
                                     selectedUser.preferredLayout === 'quest'
-                                        ? "border-app-primary bg-app-primary/5 shadow-lg"
+                                        ? "border-app-primary bg-app-primary/5 shadow-xl shadow-app-primary/10"
                                         : "border-app-border bg-app-bg text-text-muted hover:border-app-primary/30"
                                 )}
                             >
-                                <Smartphone size={32} className={selectedUser.preferredLayout === 'quest' ? "text-app-primary" : "text-text-muted"} />
+                                <Smartphone size={40} className={clsx("transition-transform group-hover:scale-110", selectedUser.preferredLayout === 'quest' ? "text-app-primary" : "text-text-muted")} />
                                 <div>
-                                    <p className="font-black text-xs text-text-main">Mobile Question</p>
-                                    <p className="text-[8px] font-black uppercase tracking-wider opacity-60">Vertical Training Card</p>
+                                    <p className="font-black text-sm text-text-main">Mobile Question</p>
+                                    <p className="text-[9px] font-black uppercase tracking-wider opacity-60 mt-1">Vertical High-Speed Practice</p>
                                 </div>
                             </button>
                             <button
                                 onClick={() => handleSetLayout('era')}
                                 className={clsx(
-                                    "p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 text-center",
+                                    "p-8 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 text-center group",
                                     selectedUser.preferredLayout === 'era'
-                                        ? "border-app-primary bg-app-primary/5 shadow-lg"
+                                        ? "border-app-primary bg-app-primary/5 shadow-xl shadow-app-primary/10"
                                         : "border-app-border bg-app-bg text-text-muted hover:border-app-primary/30"
                                 )}
                             >
-                                <Map size={32} className={selectedUser.preferredLayout === 'era' ? "text-app-primary" : "text-text-muted"} />
+                                <Map size={40} className={clsx("transition-transform group-hover:scale-110", selectedUser.preferredLayout === 'era' ? "text-app-primary" : "text-text-muted")} />
                                 <div>
-                                    <p className="font-black text-xs text-text-main">Student Era</p>
-                                    <p className="text-[8px] font-black uppercase tracking-wider opacity-60">Historical Journey</p>
+                                    <p className="font-black text-sm text-text-main">Student Era</p>
+                                    <p className="text-[9px] font-black uppercase tracking-wider opacity-60 mt-1">Library Search & Discovery</p>
                                 </div>
                             </button>
                         </div>
                     </section>
 
-                    {/* 4. Chapter Assignment Grid */}
-                    <section className="space-y-6">
-                        <h4 className="text-lg font-black flex items-center gap-3 px-2">
-                            <BookOpen className="text-app-accent" /> School Sync: Assign Chapters
+                    {/* 5. Chapter Assignment Grid (Desktop 2-column) */}
+                    <section className="space-y-8">
+                        <h4 className="text-xl font-black flex items-center gap-3 px-2">
+                            <BookOpen className="text-app-accent" /> Master Curriculum Sync
                         </h4>
 
-                        {getAllBundles().filter(bundle => bundle.grade === selectedUser.grade).map(bundle => (
-                            <div key={bundle.id} className="bg-app-surface border border-app-border rounded-[40px] overflow-hidden shadow-sm">
-                                <header className="bg-app-bg/50 p-6 border-b border-app-border">
-                                    <p className="font-black text-app-primary uppercase tracking-widest text-[10px]">{bundle.subjectId}</p>
-                                    <h5 className="font-black text-xl">{bundle.curriculum.name}</h5>
-                                </header>
-                                <div className="p-6 grid gap-3">
-                                    {bundle.curriculum.chapters.map(chapter => {
-                                        const isAssigned = selectedUser.assignedChapterIds?.includes(chapter.id);
-                                        return (
-                                            <button
-                                                key={chapter.id}
-                                                onClick={() => handleToggleChapter(chapter.id)}
-                                                className={`flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${isAssigned ? 'border-app-primary bg-app-primary/5 shadow-sm' : 'border-app-border opacity-60'
-                                                    }`}
-                                            >
-                                                <div className="text-left">
-                                                    <p className="font-bold text-sm text-text-main">{chapter.title}</p>
-                                                    <p className="text-[10px] uppercase font-black opacity-40">{chapter.atoms.length} Atoms</p>
-                                                </div>
-                                                {isAssigned ? <CheckCircle2 className="text-app-primary" size={20} /> : <Circle className="text-text-muted" size={20} />}
-                                            </button>
-                                        );
-                                    })}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {getAllBundles().map(bundle => (
+                                <div key={bundle.id} className={clsx(
+                                    "bg-app-surface border transition-all rounded-[40px] overflow-hidden shadow-sm flex flex-col",
+                                    bundle.grade === selectedUser.grade ? "border-app-primary/30 ring-1 ring-app-primary/10" : "border-app-border"
+                                )}>
+                                    <header className="bg-app-bg/50 p-8 border-b border-app-border flex justify-between items-center">
+                                        <div>
+                                            <p className="font-black text-app-primary uppercase tracking-widest text-[10px] mb-1">{bundle.subjectId}</p>
+                                            <h5 className="font-black text-2xl tracking-tight">{bundle.curriculum.name}</h5>
+                                        </div>
+                                        <div className={clsx(
+                                            "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                            bundle.grade === selectedUser.grade
+                                                ? "bg-app-primary/10 text-app-primary border-app-primary/20"
+                                                : "bg-app-bg text-text-muted border-app-border"
+                                        )}>
+                                            Grade {bundle.grade}
+                                        </div>
+                                    </header>
+                                    <div className="p-6 grid gap-3 overflow-y-auto max-h-[500px] custom-scrollbar">
+                                        {bundle.curriculum.chapters.map(chapter => {
+                                            const isAssigned = selectedUser.assignedChapterIds?.includes(chapter.id);
+                                            return (
+                                                <button
+                                                    key={chapter.id}
+                                                    onClick={() => handleToggleChapter(chapter.id)}
+                                                    className={clsx(
+                                                        "flex items-center justify-between p-5 rounded-[24px] border transition-all active:scale-[0.98] group",
+                                                        isAssigned
+                                                            ? 'border-app-primary bg-app-primary/5 shadow-sm shadow-app-primary/5'
+                                                            : 'border-app-border opacity-70 hover:opacity-100 hover:border-app-primary/30'
+                                                    )}
+                                                >
+                                                    <div className="text-left">
+                                                        <p className="font-bold text-base text-text-main group-hover:text-app-primary transition-colors">{chapter.title}</p>
+                                                        <p className="text-[10px] uppercase font-black opacity-40 mt-1">{chapter.atoms.length} Knowledge Atoms</p>
+                                                    </div>
+                                                    {isAssigned ? (
+                                                        <CheckCircle2 className="text-app-primary" size={24} />
+                                                    ) : (
+                                                        <Circle className="text-text-muted group-hover:text-app-primary transition-colors" size={24} />
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </section>
+                </div>
+            )}
+
+            {/* Immediate Save Action Bar (Sticky at bottom) */}
+            {isDirty && (
+                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-app-surface border-2 border-app-primary p-4 rounded-[32px] shadow-2xl flex items-center gap-8 animate-in slide-in-from-bottom-10 border-opacity-50 backdrop-blur-xl">
+                    <div className="pl-2">
+                        <p className="text-xs font-black uppercase tracking-widest text-app-primary flex items-center gap-2">
+                            <CloudUpload size={14} /> Unsaved Settings
+                        </p>
+                        <p className="text-[10px] text-text-muted font-bold opacity-70">Changes detected in learning path.</p>
+                    </div>
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="bg-app-primary text-white px-8 py-3.5 rounded-2xl font-black uppercase text-xs flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-app-primary/30 disabled:opacity-50 disabled:pointer-events-none"
+                    >
+                        {isSaving ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
+                        {isSaving ? "Syncing..." : "Save to Cloud"}
+                    </button>
                 </div>
             )}
         </div>

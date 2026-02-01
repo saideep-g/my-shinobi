@@ -17,7 +17,7 @@ const loadComponent = (templateId: string, version: number) => {
 interface RendererProps {
     question: QuestionBase;
     data: any;
-    onAnswer: (answer: any, duration: number) => void;
+    onAnswer: (answer: any, duration: number, timeTakenMs?: number) => void;
     isReviewMode?: boolean;
 }
 
@@ -57,6 +57,7 @@ export const QuestionRenderer: React.FC<RendererProps> = ({
         }>
             <DynamicComponent
                 data={data}
+                atomId={question.atomId}
                 onAnswer={onAnswer}
                 isReviewMode={isReviewMode}
             />

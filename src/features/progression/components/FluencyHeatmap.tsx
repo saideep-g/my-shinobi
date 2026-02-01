@@ -1,118 +1,106 @@
-import React, { useState } from 'react';
-import { useIntelligence } from '@core/engine/IntelligenceContext';
+import React, { useMemo } from 'react';
+import { useProgression } from '@/core/engine/ProgressionContext';
 import { clsx } from 'clsx';
-import { X, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 /**
- * FLUENCY HEATMAP
- * A 20x20 visualization of all multiplication facts.
- * Provides granular mastery feedback for every specific fact.
+ * FLUENCY HEATMAP (12x12)
+ * Ported from Blue-Ninja-v2.
+ * Visualizes multiplication fact mastery using a color grid.
+ * MASTERED=Green, FLUENT=Light Green, REVIEW=Yellow, STRUGGLING=Red, WARNING=Dark Red
  */
 
 export const FluencyHeatmap: React.FC = () => {
-    const { mastery } = useIntelligence();
-    const axis = Array.from({ length: 12 }, (_, i) => i + 1); // Using 12 for now as our curriculum is 12x12
-    const [selectedCell, setSelectedCell] = useState<{ r: number, c: number } | null>(null);
+    const { stats } = useProgression();
+    const config = stats.tablesConfig;
 
-    const getMasteryColor = (r: number, c: number) => {
-        const atomId = `table-${r}-${c}`;
-        const mVal = mastery[atomId];
+    const heatmapData = useMemo(() => {
+        const grid: any[][] = [];
+        for (let i = 1; i <= 12; i++) {
+            const row = [];
+            for (let j = 1; j <= 12; j++) {
+                const atomId = `table-${i}-${j}`;
+                const pb = config?.personalBests?.[atomId];
+                const streak = config?.factStreaks?.[atomId] || 0;
 
-        if (mVal === undefined) return 'bg-app-bg border-app-border opacity-20'; // Not tested
-        if (mVal >= 0.85) return 'bg-emerald-500 shadow-sm shadow-emerald-500/20'; // Mastered
-        if (mVal >= 0.70) return 'bg-amber-400'; // Developing
-        return 'bg-rose-500'; // Struggles
+                let status: 'LOCKED' | 'WARNING' | 'STRUGGLING' | 'REVIEW' | 'FLUENT' | 'MASTERED' = 'LOCKED';
+
+                if (streak >= 5 && pb && pb < 2000) status = 'MASTERED';
+                else if (streak >= 3 && pb && pb < 3000) status = 'FLUENT';
+                else if (streak >= 1 && pb && pb < 5000) status = 'REVIEW';
+                else if (streak === 0 && pb) status = 'STRUGGLING';
+                else if (pb && pb > 10000) status = 'WARNING';
+
+                row.push({ i, j, status, pb, streak });
+            }
+            grid.push(row);
+        }
+        return grid;
+    }, [config]);
+
+    const getColorClass = (status: string) => {
+        switch (status) {
+            case 'MASTERED': return 'bg-emerald-500 text-white';
+            case 'FLUENT': return 'bg-emerald-300 text-emerald-900';
+            case 'REVIEW': return 'bg-amber-300 text-amber-900';
+            case 'STRUGGLING': return 'bg-rose-400 text-white';
+            case 'WARNING': return 'bg-rose-700 text-white';
+            default: return 'bg-app-bg text-text-muted opacity-20';
+        }
     };
 
     return (
-        <div className="bg-app-surface border border-app-border rounded-[32px] p-6 space-y-4">
-            <header className="flex justify-between items-center">
+        <div className="bg-app-surface border border-app-border rounded-[32px] p-6 shadow-sm overflow-hidden">
+            <header className="flex justify-between items-center mb-6">
                 <div>
-                    <h3 className="text-sm font-black text-text-main uppercase tracking-widest">Fluency Heatmap</h3>
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-tighter">1x1 to 12x12 Knowledge Matrix</p>
+                    <h3 className="text-sm font-black flex items-center gap-2">
+                        Fluency Heatmap <span className="text-[10px] text-indigo-500 font-bold px-2 py-0.5 bg-indigo-50 rounded-full">12x12</span>
+                    </h3>
+                    <p className="text-[9px] text-text-muted font-black uppercase tracking-widest mt-1">Real-time Speed & Accuracy Map</p>
                 </div>
-                <div className="flex gap-2">
-                    <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="text-[8px] font-black text-text-muted uppercase">Stable</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-amber-400" />
-                        <span className="text-[8px] font-black text-text-muted uppercase">Drill</span>
-                    </div>
+                <div className="flex gap-1">
+                    {['#10b981', '#6ee7b7', '#fcd34d', '#fb7185', '#be123c'].map((color, idx) => (
+                        <div key={idx} className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                    ))}
                 </div>
             </header>
 
-            {/* 12x12 Grid Container */}
-            <div className="overflow-x-auto pb-4">
-                <div className="inline-grid grid-cols-13 gap-1 min-w-[400px]">
-                    {/* Header Corner */}
-                    <div className="w-8 h-8 flex items-center justify-center text-[10px] font-black text-text-muted">×</div>
-                    {/* Top Axis */}
-                    {axis.map(c => (
-                        <div key={c} className="w-8 h-8 flex items-center justify-center text-[10px] font-black text-text-muted">{c}</div>
-                    ))}
+            <div className="grid grid-cols-13 gap-1 min-w-[300px]">
+                {/* Header Row */}
+                <div className="w-6 h-6" />
+                {Array.from({ length: 12 }, (_, i) => (
+                    <div key={i} className="text-[8px] font-black text-text-muted text-center flex items-center justify-center">
+                        {i + 1}
+                    </div>
+                ))}
 
-                    {/* Rows */}
-                    {axis.map(r => (
-                        <React.Fragment key={r}>
-                            {/* Left Axis */}
-                            <div className="w-8 h-8 flex items-center justify-center text-[10px] font-black text-text-muted">{r}</div>
-                            {/* Fact Cells */}
-                            {axis.map(c => (
-                                <button
-                                    key={`${r}-${c}`}
-                                    onClick={() => setSelectedCell({ r, c })}
-                                    className={clsx(
-                                        "w-8 h-8 rounded-lg transition-all duration-300 hover:scale-125 hover:z-10 focus:outline-none focus:ring-2 focus:ring-app-primary",
-                                        getMasteryColor(r, c)
-                                    )}
-                                    title={`${r} × ${c}`}
-                                />
-                            ))}
-                        </React.Fragment>
-                    ))}
-                </div>
+                {heatmapData.map((row, idx) => (
+                    <React.Fragment key={idx}>
+                        <div className="text-[8px] font-black text-text-muted text-right pr-2 flex items-center justify-end">
+                            {idx + 1}
+                        </div>
+                        {row.map((cell, cidx) => (
+                            <div
+                                key={cidx}
+                                title={`${cell.i}x${cell.j}: ${cell.pb ? (cell.pb / 1000).toFixed(2) + 's' : 'N/A'}`}
+                                className={clsx(
+                                    "aspect-square rounded-sm transition-all hover:scale-125 hover:z-10 hover:shadow-lg cursor-help flex items-center justify-center",
+                                    getColorClass(cell.status)
+                                )}
+                            >
+                                {cell.status === 'MASTERED' && <div className="w-1 h-1 bg-white rounded-full opacity-50" />}
+                            </div>
+                        ))}
+                    </React.Fragment>
+                ))}
             </div>
 
-            {/* Detail Panel (Conditional) */}
-            {selectedCell && (
-                <div className="mt-4 p-4 bg-app-bg/50 border border-app-border rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300 relative">
-                    <button
-                        onClick={() => setSelectedCell(null)}
-                        className="absolute top-3 right-3 text-text-muted hover:text-text-main"
-                    >
-                        <X size={16} />
-                    </button>
-
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-app-surface rounded-xl flex items-center justify-center text-xl font-black text-text-main shadow-sm border border-app-border">
-                            {selectedCell.r}×{selectedCell.c}
-                        </div>
-                        <div>
-                            <p className="text-xl font-black text-text-main line-clamp-none">
-                                Result: {selectedCell.r * selectedCell.c}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Mastery Status:</span>
-                                <span className="text-[10px] font-black text-app-primary uppercase">
-                                    {mastery[`table-${selectedCell.r}-${selectedCell.c}`]
-                                        ? `${Math.round(mastery[`table-${selectedCell.r}-${selectedCell.c}`] * 100)}% Precision`
-                                        : "Not Yet Analyzed"
-                                    }
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {!selectedCell && (
-                <div className="flex items-center gap-2 text-text-muted opacity-50 px-2 py-1">
-                    <Info size={12} />
-                    <span className="text-[9px] font-black uppercase tracking-tight">Tap any cell to inspect fluency metrics</span>
-                </div>
-            )}
+            <footer className="mt-6 pt-4 border-t border-app-border flex items-center gap-3">
+                <Info size={14} className="text-app-primary" />
+                <p className="text-[9px] font-medium text-text-muted italic">
+                    Grid colors reflect speed and streak consistency across your last 50 attempts.
+                </p>
+            </footer>
         </div>
     );
 };
