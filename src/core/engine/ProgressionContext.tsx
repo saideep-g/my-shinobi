@@ -23,9 +23,11 @@ interface ProgressionContextType {
     updateStats: (updates: Partial<StudentStats>) => Promise<void>;
     updateProfileDetails: (updates: Partial<StudentStats>) => Promise<void>;
     saveChangesToCloud: (userId?: string, statsToSync?: StudentStats) => Promise<void>;
+    forceSyncToCloud: () => Promise<void>;
     isDirty: boolean;
     setIsDirty: (dirty: boolean) => void;
     isLoaded: boolean;
+    isSyncing: boolean;
 }
 
 
@@ -52,6 +54,7 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const [stats, setStats] = useState<StudentStats>(DEFAULT_STATS);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     // 1. Load historical stats from IndexedDB on startup/auth change
     useEffect(() => {
@@ -209,12 +212,16 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
      * Updates arbitrary fields in the student stats object.
      * Useful for persisting avatars, layout preferences, etc.
      */
-    const updateStats = async (updates: Partial<StudentStats>) => {
+    const updateStats = async (updates: Partial<StudentStats>, immediate = false) => {
         if (!user) return;
         const updatedStats = { ...stats, ...updates };
         setStats(updatedStats);
         setIsDirty(true);
         await dbAdapter.put('stats', { ...updatedStats, id: user.uid });
+
+        if (immediate) {
+            await forceSyncToCloud(updatedStats);
+        }
     };
 
     /**
@@ -226,6 +233,7 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const targetStats = statsToSync || stats;
 
         if (!targetUid) return;
+        setIsSyncing(true);
 
         try {
             // Fetch latest mastery from local DB for the target user
@@ -244,7 +252,18 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         } catch (err) {
             console.error(`[Progression] Manual Sync Failed for ${targetUid}:`, err);
             throw err; // Re-throw to allow component-level error handling
+        } finally {
+            setIsSyncing(false);
         }
+    };
+
+    /**
+     * FORCE SYNC TO CLOUD
+     * Bypasses the auto-sync debounce for high-priority administrative changes.
+     */
+    const forceSyncToCloud = async (statsOverride?: StudentStats) => {
+        if (!user) return;
+        await saveChangesToCloud(user.uid, statsOverride || stats);
     };
 
     return (
@@ -256,9 +275,11 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
             updateStats,
             updateProfileDetails: updateStats,
             saveChangesToCloud,
+            forceSyncToCloud,
             isDirty,
             setIsDirty,
-            isLoaded
+            isLoaded,
+            isSyncing
         }}>
             {children}
         </ProgressionContext.Provider>

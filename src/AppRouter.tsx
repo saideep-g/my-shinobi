@@ -69,7 +69,7 @@ const StudentLayoutSwitcher = () => {
     return <UniversalNav />;
 };
 
-import { AdminLayout } from './layouts/AdminLayout';
+import { AdminShell } from '@features/admin/layouts/AdminShell';
 import { AdminDashboard } from '@features/admin/components/AdminDashboard';
 import { ReviewQueue } from '@features/admin/components/ReviewQueue';
 import { LogsExplorer } from '@features/admin/components/LogsExplorer';
@@ -123,7 +123,7 @@ export const AppRouter: React.FC = () => {
                         element={
                             <ProtectedRoute>
                                 <RoleGuard allowedRoles={['ADMIN']} redirectTo="/dashboard">
-                                    <AdminLayout />
+                                    <AdminShell />
                                 </RoleGuard>
                             </ProtectedRoute>
                         }
