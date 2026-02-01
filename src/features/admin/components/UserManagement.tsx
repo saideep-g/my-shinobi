@@ -3,7 +3,8 @@ import { useProgression } from '@core/engine/ProgressionContext';
 import { dbAdapter } from '@core/database/adapter';
 import { StudentStats } from '@/types/progression';
 import { getAllBundles } from '@features/curriculum/data/bundleRegistry';
-import { BookOpen, GraduationCap, CheckCircle2, Circle, Users, User as UserIcon, ShieldCheck, Smartphone, Map, Save, CloudUpload, RefreshCw } from 'lucide-react';
+import { BookOpen, GraduationCap, CheckCircle2, Circle, Users, User as UserIcon, ShieldCheck, Smartphone, Map, Save, CloudUpload, RefreshCw, RefreshCcw } from 'lucide-react';
+import { userService } from '@services/db/userService';
 import { clsx } from 'clsx';
 
 interface UserStats extends StudentStats {
@@ -16,6 +17,7 @@ export const UserManagement: React.FC = () => {
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const handleSave = async () => {
         if (!selectedUser) return;
@@ -34,18 +36,29 @@ export const UserManagement: React.FC = () => {
     // Current context stats don't always have ID visible in the same way, but we know uid from auth
     const adminId = (currentAdminStats as any).id || '';
 
-    // Load all local users on mount
-    useEffect(() => {
-        const loadUsers = async () => {
+    const loadUsers = async (forceRefresh = false) => {
+        if (forceRefresh) setIsRefreshing(true);
+        try {
+            if (forceRefresh) {
+                await userService.syncRosterFromCloud();
+            }
             const users = await dbAdapter.getAll<UserStats>('stats');
             setAllUsers(users);
-            if (users.length > 0) {
+            if (users.length > 0 && !selectedUserId) {
                 // Default to current admin or first user
                 setSelectedUserId(adminId || users[0].id);
             }
+        } catch (error) {
+            console.error("[UserManagement] Load failed:", error);
+        } finally {
             setIsLoading(false);
-        };
-        loadUsers();
+            setIsRefreshing(false);
+        }
+    };
+
+    // Load all local users on mount
+    useEffect(() => {
+        loadUsers(true); // Sync on mount to get latest users
     }, [adminId]);
 
     const selectedUser = allUsers.find(u => u.id === selectedUserId);
@@ -129,6 +142,16 @@ export const UserManagement: React.FC = () => {
                             <Users className="text-indigo-500" /> Roster Management
                         </h4>
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Select a student to modify their learning path</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => loadUsers(true)}
+                            disabled={isRefreshing}
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all disabled:opacity-50"
+                        >
+                            <RefreshCcw size={14} className={clsx(isRefreshing && "animate-spin")} />
+                            {isRefreshing ? "Syncing..." : "Sync Roster"}
+                        </button>
                     </div>
                 </header>
 

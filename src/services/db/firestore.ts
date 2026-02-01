@@ -20,6 +20,10 @@ import { db } from '@core/database/firebase';
 export const getStudentDoc = (uid: string): DocumentReference =>
     doc(db, 'students', uid);
 
+/** Returns the global collection of students */
+export const getStudentsCol = (): CollectionReference =>
+    collection(db, 'students');
+
 // --- CURRICULUM PATHS ---
 /** Returns the global collection of subjects */
 export const getSubjectsCol = (): CollectionReference =>
